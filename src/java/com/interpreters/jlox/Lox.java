@@ -1,7 +1,7 @@
 package com.interpreters.jlox;
 
 import com.interpreters.jlox.components.Scanner;
-import com.interpreters.jlox.model.Token;
+import com.interpreters.jlox.ast.Token;
 
 import java.io.BufferedReader;
 import java.io.IOException;

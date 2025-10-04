@@ -1,13 +1,13 @@
 package com.interpreters.jlox.components;
 
 import com.interpreters.jlox.Lox;
-import com.interpreters.jlox.model.Token;
-import com.interpreters.jlox.model.TokenType;
+import com.interpreters.jlox.ast.Token;
+import com.interpreters.jlox.ast.TokenType;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.interpreters.jlox.model.TokenType.*;
+import static com.interpreters.jlox.ast.TokenType.*;
 
 public class Scanner {
 

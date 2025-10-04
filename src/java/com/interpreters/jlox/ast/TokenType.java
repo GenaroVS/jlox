@@ -1,4 +1,4 @@
-package com.interpreters.jlox.model;
+package com.interpreters.jlox.ast;
 
 import java.util.HashMap;
 import java.util.Map;

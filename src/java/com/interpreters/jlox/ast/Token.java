@@ -1,4 +1,4 @@
-package com.interpreters.jlox.model;
+package com.interpreters.jlox.ast;
 
 public class Token {
     final TokenType type;
