@@ -1,7 +1,8 @@
 package com.interpreters.jlox;
 
-import com.interpreters.jlox.components.Scanner;
 import com.interpreters.jlox.ast.Token;
+import com.interpreters.jlox.ast.TokenType;
+import com.interpreters.jlox.components.Scanner;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -50,6 +51,14 @@ public class Lox {
         // For now, just print the tokens.
         for (Token token : tokens) {
             System.out.println(token);
+        }
+    }
+
+    public static void error(Token token, String message) {
+        if (token.type == TokenType.EOF) {
+            report(token.line, " at end", message);
+        } else {
+            report(token.line, " at '" + token.lexeme + "'", message);
         }
     }
 
