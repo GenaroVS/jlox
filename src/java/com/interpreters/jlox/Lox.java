@@ -1,7 +1,10 @@
 package com.interpreters.jlox;
 
+import com.interpreters.jlox.ast.Expr;
 import com.interpreters.jlox.ast.Token;
 import com.interpreters.jlox.ast.TokenType;
+import com.interpreters.jlox.components.AstPrinter;
+import com.interpreters.jlox.components.Parser;
 import com.interpreters.jlox.components.Scanner;
 
 import java.io.BufferedReader;
@@ -10,7 +13,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
 
 public class Lox {
 
@@ -46,12 +48,11 @@ public class Lox {
 
     private static void run(String source) {
         Scanner scanner = new Scanner(source);
-        List<Token> tokens = scanner.scanTokens();
+        Parser parser = new Parser(scanner.scanTokens());
+        Expr expression = parser.parse();
 
-        // For now, just print the tokens.
-        for (Token token : tokens) {
-            System.out.println(token);
-        }
+        if (hadError) return;
+        System.out.println(new AstPrinter().print(expression));
     }
 
     public static void error(Token token, String message) {

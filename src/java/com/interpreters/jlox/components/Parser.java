@@ -18,6 +18,14 @@ public class Parser {
         this.tokens = tokens;
     }
 
+    public Expr parse() {
+        try {
+            return expression();
+        } catch (ParseError error) {
+            return null;
+        }
+    }
+
     private Expr expression() {
         return equality();
     }
@@ -88,7 +96,7 @@ public class Parser {
         if (isAtEnd()) {
             throw error(previous(), "Incomplete expression");
         } else {
-            throw error(peek(), "Invalid non-terminal");
+            throw error(peek(), "Expected expression.");
         }
     }
 
