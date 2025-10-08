@@ -7,6 +7,7 @@ public abstract class Expr {
         R visitGroupingExpr(Grouping expr);
         R visitLiteralExpr(Literal expr);
         R visitUnaryExpr(Unary expr);
+        R visitTernaryExpr(Ternary expr);
     }
 
     public abstract <R> R accept(Visitor<R> visitor);
@@ -70,6 +71,24 @@ public abstract class Expr {
         @Override
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitUnaryExpr(this);
+        }
+    }
+
+    public static class Ternary extends Expr {
+
+        public final Expr predicate;
+        public final Expr left;
+        public final Expr right;
+
+        public Ternary(Expr predicate, Expr left, Expr right) {
+            this.predicate = predicate;
+            this.left = left;
+            this.right = right;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitTernaryExpr(this);
         }
     }
 

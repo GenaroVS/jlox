@@ -28,4 +28,9 @@ public class AstPrinterPolishNotation implements Expr.Visitor<String> {
     public String visitUnaryExpr(Expr.Unary expr) {
         return expr.right.accept(this) + " " + expr.operator.lexeme;
     }
+
+    @Override
+    public String visitTernaryExpr(Expr.Ternary expr) {
+        return null;
+    }
 }

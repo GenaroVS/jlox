@@ -31,12 +31,22 @@ public class Parser {
     }
 
     private Expr comma() {
-        Expr expr = equality();
+        Expr expr = ternary();
 
         while (match(COMMA)) {
             Token operator = previous();
-            Expr right = equality();
+            Expr right = ternary();
             expr = new Expr.Binary(expr, operator, right);
+        }
+        return expr;
+    }
+
+    private Expr ternary() {
+        Expr expr = equality();
+        if (match(QUESTION)) {
+            Expr left = expression();
+            checkWithError(COLON, "Expected ':' after the first ternary expression.");
+            return new Expr.Ternary(expr, left, ternary());
         }
         return expr;
     }
@@ -101,7 +111,7 @@ public class Parser {
 
         if (match(LEFT_PAREN)) {
             Expr expr = expression();
-            consume(RIGHT_PAREN, "Expect ')' after expression.");
+            checkWithError(RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
         }
         if (isAtEnd()) {
@@ -125,7 +135,7 @@ public class Parser {
         return false;
     }
 
-    private Token consume(TokenType type, String message) {
+    private Token checkWithError(TokenType type, String message) {
         if (check(type)) return advance();
 
         throw error(peek(), message);
