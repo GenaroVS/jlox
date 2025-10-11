@@ -1,11 +1,11 @@
 package com.interpreters.jlox;
 
-import com.interpreters.jlox.ast.Expr;
 import com.interpreters.jlox.ast.Token;
 import com.interpreters.jlox.ast.TokenType;
-import com.interpreters.jlox.components.AstPrinter;
+import com.interpreters.jlox.components.Interpreter;
 import com.interpreters.jlox.components.Parser;
 import com.interpreters.jlox.components.Scanner;
+import com.interpreters.jlox.exceptions.RuntimeError;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,7 +16,8 @@ import java.nio.file.Paths;
 
 public class Lox {
 
-    static boolean hadError = false;
+    static boolean hadParserError = false;
+    static boolean hadRuntimeError = false;
 
     public static void main (String[] args) throws IOException {
         if (args.length > 1) {
@@ -32,6 +33,8 @@ public class Lox {
     private static void runFile(String path) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(path));
         run(new String(bytes, Charset.defaultCharset()));
+
+        if (hadRuntimeError) System.exit(70);
     }
 
     private static void runPrompt() throws IOException {
@@ -49,10 +52,15 @@ public class Lox {
     private static void run(String source) {
         Scanner scanner = new Scanner(source);
         Parser parser = new Parser(scanner.scanTokens());
-        Expr expression = parser.parse();
+        //System.out.println(new AstPrinter().print(expression));
+        if (hadParserError) return;
+        Interpreter interpreter = new Interpreter();
+        interpreter.interpret(parser.parse());
+    }
 
-        if (hadError) return;
-        System.out.println(new AstPrinter().print(expression));
+    public static void runtimeError(RuntimeError error) {
+        report(error.token.line, "", error.getMessage());
+        hadRuntimeError = true;
     }
 
     public static void error(Token token, String message) {
@@ -69,6 +77,6 @@ public class Lox {
 
     public static void report(int line, String where, String message) {
         System.err.println("[line " + line + "] ERROR" + where + ": " + message);
-        hadError = true;
+        hadParserError = true;
     }
 }
