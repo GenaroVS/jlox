@@ -2,9 +2,11 @@ package com.interpreters.jlox.components;
 
 import com.interpreters.jlox.Lox;
 import com.interpreters.jlox.ast.Expr;
+import com.interpreters.jlox.ast.Stmt;
 import com.interpreters.jlox.ast.Token;
 import com.interpreters.jlox.ast.TokenType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.interpreters.jlox.ast.TokenType.*;
@@ -18,12 +20,34 @@ public class Parser {
         this.tokens = tokens;
     }
 
-    public Expr parse() {
+    public List<Stmt> parse() {
+        List<Stmt>  statements = new ArrayList<>();
         try {
-            return expression();
+            while (!isAtEnd()) {
+                statements.add(statement());
+            }
         } catch (ParseError error) {
             return null;
         }
+        return statements;
+    }
+
+    private Stmt statement() {
+        if (match(PRINT)) return printStatement();
+
+        return expressionStatement();
+    }
+
+    private Stmt expressionStatement() {
+        Expr expr = expression();
+        checkWithError(SEMICOLON, "Expect ';' after expression.");
+        return new Stmt.Expression(expr);
+    }
+
+    private Stmt printStatement() {
+        Expr expr = expression();
+        checkWithError(SEMICOLON, "Expect ';' after value.");
+        return new Stmt.Print(expr);
     }
 
     private Expr expression() {
@@ -122,7 +146,7 @@ public class Parser {
     }
 
     private boolean isAtEnd() {
-        return cur >= tokens.size();
+        return peek().type == EOF;
     }
 
     private boolean match(TokenType... types) {

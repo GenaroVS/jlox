@@ -2,18 +2,22 @@ package com.interpreters.jlox.components;
 
 import com.interpreters.jlox.Lox;
 import com.interpreters.jlox.ast.Expr;
+import com.interpreters.jlox.ast.Stmt;
 import com.interpreters.jlox.ast.Token;
 import com.interpreters.jlox.exceptions.RuntimeError;
+
+import java.util.List;
 
 import static com.interpreters.jlox.ast.TokenType.BANG;
 import static com.interpreters.jlox.ast.TokenType.MINUS;
 
-public class Interpreter implements Expr.Visitor<Object> {
+public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
-    public void interpret(Expr expr) {
+    public void interpret(List<Stmt> statements) {
         try {
-            Object val = evaluate(expr);
-            System.out.println(stringify(val));
+            for (Stmt stmt : statements) {
+                execute(stmt);
+            }
         } catch (RuntimeError e) {
             Lox.runtimeError(e);
         }
@@ -31,6 +35,19 @@ public class Interpreter implements Expr.Visitor<Object> {
         }
 
         return object.toString();
+    }
+
+    @Override
+    public Void visitExpressionStmt(Stmt.Expression stmt) {
+        evaluate(stmt.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStmt(Stmt.Print stmt) {
+        Object val = evaluate(stmt.expression);
+        System.out.println(stringify(val));
+        return null;
     }
 
     @Override
@@ -160,6 +177,10 @@ public class Interpreter implements Expr.Visitor<Object> {
 
     private Object evaluate(Expr expr) {
         return expr.accept(this);
+    }
+
+    private void execute(Stmt stmt) {
+        stmt.accept(this);
     }
 
     private boolean isTruthy(Object val) {

@@ -1,5 +1,6 @@
 package com.interpreters.jlox;
 
+import com.interpreters.jlox.ast.Stmt;
 import com.interpreters.jlox.ast.Token;
 import com.interpreters.jlox.ast.TokenType;
 import com.interpreters.jlox.components.Interpreter;
@@ -13,9 +14,11 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class Lox {
 
+    static Interpreter interpreter = new Interpreter();
     static boolean hadParserError = false;
     static boolean hadRuntimeError = false;
 
@@ -45,6 +48,8 @@ public class Lox {
             System.out.print("> ");
             String line = reader.readLine();
             if (line == null) break;
+            hadRuntimeError = false;
+            hadParserError = false;
             run(line);
         }
     }
@@ -52,10 +57,10 @@ public class Lox {
     private static void run(String source) {
         Scanner scanner = new Scanner(source);
         Parser parser = new Parser(scanner.scanTokens());
+        List<Stmt> statements = parser.parse();
         //System.out.println(new AstPrinter().print(expression));
-        if (hadParserError) return;
-        Interpreter interpreter = new Interpreter();
-        interpreter.interpret(parser.parse());
+        if (hadParserError || statements == null) return;
+        interpreter.interpret(statements);
     }
 
     public static void runtimeError(RuntimeError error) {

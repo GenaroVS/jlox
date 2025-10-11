@@ -21,6 +21,10 @@ Comma       ,           Left
 
 ------------------------ RULES WITH PRECEDENCE (lowest to highest) ---------------------------
 
+program       -> statement* EOF ;
+statement     -> exprStmt | printStmt ;
+exprStmt      -> expression ";" ;
+printStmt     -> "print" expression ";" ;
 expression    -> Comma
 Comma         -> ternary ( "," ternary )* ;
 ternary       -> equality ( "?" expression ":" ternary)? ;
