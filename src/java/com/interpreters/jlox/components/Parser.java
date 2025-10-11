@@ -22,14 +22,32 @@ public class Parser {
 
     public List<Stmt> parse() {
         List<Stmt>  statements = new ArrayList<>();
-        try {
-            while (!isAtEnd()) {
-                statements.add(statement());
+        while (!isAtEnd()) {
+            Stmt stmt = declaration();
+            if (stmt != null) {
+                statements.add(stmt);
             }
-        } catch (ParseError error) {
-            return null;
         }
         return statements;
+    }
+
+    private Stmt declaration() {
+        try {
+            if (match(VAR)) return varDeclare();
+            return statement();
+        } catch (ParseError e) {
+            return null;
+        }
+    }
+
+    private Stmt varDeclare() {
+        Token name = checkWithError(IDENTIFIER, "Expect variable name.");
+        Expr initialVal = null;
+        if (match(EQUAL)) {
+            initialVal = expression();
+        }
+        checkWithError(SEMICOLON, "Expect ';' after variable declaration.");
+        return new Stmt.Var(name, initialVal);
     }
 
     private Stmt statement() {
@@ -128,6 +146,7 @@ public class Parser {
         if (match(FALSE)) return new Expr.Literal(false);
         if (match(TRUE)) return new Expr.Literal(true);
         if (match(NIL)) return new Expr.Literal(null);
+        if (match(IDENTIFIER)) return new Expr.Variable(previous());
 
         if (match(NUMBER, STRING)) {
             return new Expr.Literal(previous().literal);
@@ -149,6 +168,11 @@ public class Parser {
         return peek().type == EOF;
     }
 
+    private Token advance() {
+        if (!isAtEnd()) cur++;
+        return previous();
+    }
+
     private boolean match(TokenType... types) {
         for (TokenType type : types) {
             if (check(type)) {
@@ -168,11 +192,6 @@ public class Parser {
     private boolean check(TokenType type) {
         if (isAtEnd()) return false;
         return peek().type == type;
-    }
-
-    private Token advance() {
-        if (!isAtEnd()) cur++;
-        return previous();
     }
 
     private Token peek() {

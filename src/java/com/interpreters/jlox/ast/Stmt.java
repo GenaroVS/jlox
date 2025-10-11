@@ -1,15 +1,30 @@
 package com.interpreters.jlox.ast;
 
-import java.util.List;
-
 public abstract class Stmt {
 
     public interface Visitor<R> {
+        R visitVarStmt(Var stmt);
         R visitExpressionStmt(Expression stmt);
         R visitPrintStmt(Print stmt);
     }
 
     public abstract <R> R accept(Visitor<R> visitor);
+
+    public static class Var extends Stmt {
+
+        public final Token name;
+        public final Expr initializer;
+
+        public Var(Token name, Expr initializer) {
+            this.name = name;
+            this.initializer = initializer;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitVarStmt(this);
+        }
+    }
 
     public static class Expression extends Stmt {
 
