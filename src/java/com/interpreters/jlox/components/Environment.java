@@ -13,6 +13,14 @@ public class Environment {
         values.put(name, val);
     }
 
+    public void assign(Token name, Object val) {
+        if (values.containsKey(name.lexeme)) {
+            values.put(name.lexeme, val);
+            return;
+        }
+        throw new RuntimeError(name, String.format("Undefined variable '%s'.", name.lexeme));
+    }
+
     public Object get(Token token) {
         if (values.containsKey(token.lexeme)) {
             return values.get(token.lexeme);
