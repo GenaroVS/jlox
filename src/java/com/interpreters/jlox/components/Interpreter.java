@@ -13,7 +13,7 @@ import static com.interpreters.jlox.ast.TokenType.MINUS;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
-    private final Environment env = new Environment();
+    private Environment env = new Environment();
 
     public void interpret(List<Stmt> statements) {
         try {
@@ -37,6 +37,12 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
 
         return object.toString();
+    }
+
+    @Override
+    public Void visitBlockStmt(Stmt.Block stmt) {
+        executeBlock(stmt.statements, env);
+        return null;
     }
 
     @Override
@@ -202,6 +208,18 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     private void execute(Stmt stmt) {
         stmt.accept(this);
+    }
+
+    private void executeBlock(List<Stmt> statements, Environment env) {
+        Environment previous = this.env;
+        try {
+            this.env = env;
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
+        } finally {
+            this.env = previous;
+        }
     }
 
     private boolean isTruthy(Object val) {

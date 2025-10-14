@@ -24,7 +24,8 @@ Comma       ,           Left
 program       -> declaration* EOF ;
 declaration   -> varDeclare | statement;
 varDeclare    -> "var" IDENTIFIER ( "=" expression )? ";" ;
-statement     -> exprStmt | printStmt ;
+statement     -> exprStmt | printStmt | block ;
+block         -> "{" declaration* "}" ;
 exprStmt      -> expression ";" ;
 printStmt     -> "print" expression ";" ;
 expression    -> Comma

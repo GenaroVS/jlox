@@ -51,9 +51,19 @@ public class Parser {
     }
 
     private Stmt statement() {
+        if (match(LEFT_BRACE)) return block();
         if (match(PRINT)) return printStatement();
 
         return expressionStatement();
+    }
+
+    private Stmt block() {
+        List<Stmt> statements = new ArrayList<>();
+        while (!check(RIGHT_BRACE) && !isAtEnd()) {
+            statements.add(declaration());
+        }
+        checkWithError(RIGHT_BRACE, "Expected '}' after block.");
+        return new Stmt.Block(statements);
     }
 
     private Stmt expressionStatement() {
