@@ -35,7 +35,7 @@ public class Lox {
 
     private static void runFile(String path) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(path));
-        run(new String(bytes, Charset.defaultCharset()));
+        run(new String(bytes, Charset.defaultCharset()), false);
 
         if (hadRuntimeError) System.exit(70);
     }
@@ -50,13 +50,13 @@ public class Lox {
             if (line == null) break;
             hadRuntimeError = false;
             hadParserError = false;
-            run(line);
+            run(line, true);
         }
     }
 
-    private static void run(String source) {
+    private static void run(String source, boolean allowSingleExpressions) {
         Scanner scanner = new Scanner(source);
-        Parser parser = new Parser(scanner.scanTokens());
+        Parser parser = new Parser(scanner.scanTokens(), allowSingleExpressions);
         List<Stmt> statements = parser.parse();
         //System.out.println(new AstPrinter().print(expression));
         if (hadParserError || statements == null) return;

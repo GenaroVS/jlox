@@ -14,10 +14,13 @@ import static com.interpreters.jlox.ast.TokenType.*;
 public class Parser {
     private final List<Token> tokens;
     private int cur = 0;
+    private boolean allowSingleExpression;
+    private boolean foundSingleExpression = false;
     private static class ParseError extends RuntimeException {}
 
-    public Parser(List<Token> tokens) {
+    public Parser(List<Token> tokens, boolean allowSingleExpression) {
         this.tokens = tokens;
+        this.allowSingleExpression = allowSingleExpression;
     }
 
     public List<Stmt> parse() {
@@ -27,13 +30,20 @@ public class Parser {
             if (stmt != null) {
                 statements.add(stmt);
             }
+            if (allowSingleExpression && foundSingleExpression) {
+                return statements;
+            }
+            allowSingleExpression = false;
         }
         return statements;
     }
 
     private Stmt declaration() {
         try {
-            if (match(VAR)) return varDeclare();
+            if (match(VAR)) {
+                allowSingleExpression = false;
+                return varDeclare();
+            }
             return statement();
         } catch (ParseError e) {
             return null;
@@ -68,7 +78,11 @@ public class Parser {
 
     private Stmt expressionStatement() {
         Expr expr = expression();
-        checkWithError(SEMICOLON, "Expect ';' after expression.");
+        if (allowSingleExpression && isAtEnd()) {
+            foundSingleExpression = true;
+        } else {
+            checkWithError(SEMICOLON, "Expect ';' after expression.");
+        }
         return new Stmt.Expression(expr);
     }
 
