@@ -25,6 +25,7 @@ program       -> declaration* EOF ;
 declaration   -> varDeclare | statement;
 varDeclare    -> "var" IDENTIFIER ( "=" expression )? ";" ;
 statement     -> exprStmt | printStmt | block | ifStmt ;
+while         -> "while" "(" expression ")" statement ;
 block         -> "{" declaration* "}" ;
 ifStm         -> "if" "(" expression ")" statement ( "else" statement )? ;
 exprStmt      -> expression ";" ;

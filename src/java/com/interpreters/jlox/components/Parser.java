@@ -64,6 +64,7 @@ public class Parser {
     private Stmt statement() {
         if (match(PRINT)) return printStatement();
         if (match(IF)) return ifStmt();
+        if (match(WHILE)) return whileStmt();
         if (match(LEFT_BRACE)) return block();
 
         return expressionStatement();
@@ -76,6 +77,14 @@ public class Parser {
         }
         checkWithError(RIGHT_BRACE, "Expected '}' after block.");
         return new Stmt.Block(statements);
+    }
+
+    private Stmt whileStmt() {
+        checkWithError(LEFT_PAREN, "Expected '(' after 'while'.");
+        Expr cond = expression();
+        checkWithError(RIGHT_PAREN, "Expected ')' after condition.");
+        Stmt body = statement();
+        return new Stmt.While(cond, body);
     }
 
     private Stmt ifStmt() {
@@ -129,7 +138,7 @@ public class Parser {
             Token equals = previous();
             Expr val = assignment();
             if (expr instanceof Expr.Variable) {
-                Token name = ((Expr.Variable) val).name;
+                Token name = ((Expr.Variable) expr).name;
                 return new Expr.Assign(name, val);
             }
             error(equals, "Invalid assignment target.");
