@@ -7,6 +7,7 @@ import com.interpreters.jlox.ast.Token;
 import com.interpreters.jlox.ast.TokenType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.interpreters.jlox.ast.TokenType.*;
@@ -63,6 +64,7 @@ public class Parser {
 
     private Stmt statement() {
         if (match(PRINT)) return printStatement();
+        if (match(FOR)) return forStmt();
         if (match(IF)) return ifStmt();
         if (match(WHILE)) return whileStmt();
         if (match(LEFT_BRACE)) return block();
@@ -77,6 +79,46 @@ public class Parser {
         }
         checkWithError(RIGHT_BRACE, "Expected '}' after block.");
         return new Stmt.Block(statements);
+    }
+
+    private Stmt forStmt() {
+        checkWithError(LEFT_PAREN, "Expected '(' after 'for'.");
+        Stmt initializer;
+        if (match(SEMICOLON)) {
+            initializer = null;
+        } else if (match(VAR)) {
+            initializer = varDeclare();
+        } else {
+            initializer = expressionStatement();
+        }
+        Expr condition = null;
+        if (!check(SEMICOLON)) {
+            condition = expression();
+        }
+        checkWithError(SEMICOLON, "Expect ';' after for loop condition.");
+        Expr increment = null;
+        if (!check(RIGHT_PAREN)) {
+            increment = expression();
+        }
+        checkWithError(RIGHT_PAREN, "Expected ')' after for clauses.");
+        Stmt body = statement();
+        if (increment != null) {
+            body = new Stmt.Block(
+                    Arrays.asList(body, new Stmt.Expression(increment))
+            );
+        }
+        if (condition != null) {
+            body = new Stmt.While(condition, body);
+        } else {
+            body = new Stmt.While(new Expr.Literal(true), body);
+        }
+        if (initializer != null) {
+            body = new Stmt.Block(
+                    Arrays.asList(initializer, body)
+            );
+        }
+
+        return body;
     }
 
     private Stmt whileStmt() {
