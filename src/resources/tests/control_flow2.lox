@@ -1,5 +1,3 @@
-// expect false
-
 var bool = true;
 if (bool) {
     if (!bool) print "true";
