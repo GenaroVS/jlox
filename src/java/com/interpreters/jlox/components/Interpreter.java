@@ -8,8 +8,7 @@ import com.interpreters.jlox.exceptions.RuntimeError;
 
 import java.util.List;
 
-import static com.interpreters.jlox.ast.TokenType.BANG;
-import static com.interpreters.jlox.ast.TokenType.MINUS;
+import static com.interpreters.jlox.ast.TokenType.*;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
@@ -42,6 +41,16 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitBlockStmt(Stmt.Block stmt) {
         executeBlock(stmt.statements, env);
+        return null;
+    }
+
+    @Override
+    public Void visitIfStmt(Stmt.If stmt) {
+        if (isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.thenBranch);
+        } else if (stmt.elseBranch != null){
+            execute(stmt.elseBranch);
+        }
         return null;
     }
 
@@ -163,6 +172,17 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                 }
         }
         return null;
+    }
+
+    @Override
+    public Object visitLogicalExpr(Expr.Logical expr) {
+        Object leftResult = evaluate(expr.left);
+        if (expr.operator.type == OR) {
+            if (isTruthy(leftResult)) return leftResult;
+        } else {
+            if (!isTruthy(leftResult)) return leftResult;
+        }
+        return evaluate(expr.right);
     }
 
     @Override

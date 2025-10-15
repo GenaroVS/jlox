@@ -46,6 +46,7 @@ public class Parser {
             }
             return statement();
         } catch (ParseError e) {
+            synchronize();
             return null;
         }
     }
@@ -61,8 +62,9 @@ public class Parser {
     }
 
     private Stmt statement() {
-        if (match(LEFT_BRACE)) return block();
         if (match(PRINT)) return printStatement();
+        if (match(IF)) return ifStmt();
+        if (match(LEFT_BRACE)) return block();
 
         return expressionStatement();
     }
@@ -74,6 +76,19 @@ public class Parser {
         }
         checkWithError(RIGHT_BRACE, "Expected '}' after block.");
         return new Stmt.Block(statements);
+    }
+
+    private Stmt ifStmt() {
+        checkWithError(LEFT_PAREN, "Expect '(' after 'if'.");
+        Expr conditional = expression();
+        checkWithError(RIGHT_PAREN, "Expect ')' after if condition.");
+
+        Stmt thenBranch = statement();
+        Stmt elseBranch = null;
+        if (match(ELSE)) {
+            elseBranch = statement();
+        }
+        return new Stmt.If(conditional, thenBranch, elseBranch);
     }
 
     private Stmt expressionStatement() {
@@ -123,13 +138,33 @@ public class Parser {
     }
 
     private Expr ternary() {
-        Expr expr = equality();
+        Expr expr = or();
         if (match(QUESTION)) {
             Expr left = expression();
             checkWithError(COLON, "Expected ':' after the first ternary expression.");
             return new Expr.Ternary(expr, left, ternary());
         }
         return expr;
+    }
+
+    private Expr or() {
+        Expr left = and();
+        while (match(OR)) {
+            Token operator = previous();
+            Expr right = and();
+            left = new Expr.Logical(left, operator, right);
+        }
+        return left;
+    }
+
+    private Expr and() {
+        Expr left = equality();
+        while (match(AND)) {
+            Token operator = previous();
+            Expr right = equality();
+            left = new Expr.Logical(left, operator, right);
+        }
+        return left;
     }
 
     private Expr equality() {
@@ -244,5 +279,27 @@ public class Parser {
     private ParseError error(Token token, String message) {
         Lox.error(token, message);
         return new ParseError();
+    }
+
+    private void synchronize() {
+        advance();
+
+        while (!isAtEnd()) {
+            if (previous().type == SEMICOLON) return;
+
+            switch (peek().type) {
+                case CLASS:
+                case FUN:
+                case VAR:
+                case FOR:
+                case IF:
+                case WHILE:
+                case PRINT:
+                case RETURN:
+                    return;
+            }
+
+            advance();
+        }
     }
 }

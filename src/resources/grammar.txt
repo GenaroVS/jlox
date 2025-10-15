@@ -24,14 +24,17 @@ Comma       ,           Left
 program       -> declaration* EOF ;
 declaration   -> varDeclare | statement;
 varDeclare    -> "var" IDENTIFIER ( "=" expression )? ";" ;
-statement     -> exprStmt | printStmt | block ;
+statement     -> exprStmt | printStmt | block | ifStmt ;
 block         -> "{" declaration* "}" ;
+ifStm         -> "if" "(" expression ")" statement ( "else" statement )? ;
 exprStmt      -> expression ";" ;
 printStmt     -> "print" expression ";" ;
 expression    -> Comma
 Comma         -> assignment ( "," assignment )* ;
 assignment    -> IDENTIFIER ( ( "=" | "+=" | "*=" | "/=") assignment | ternary ;
 ternary       -> equality ( "?" expression ":" ternary)? ;
+logic_or      -> logic_and ( "or" logic_and )* ;
+logic_and     -> equality ( "and" equality )* ;
 equality      -> comparison ( ( "!=" | "==" ) comparison )* ;
 comparison    -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term          -> factor ( ( "-" | "+" ) factor )* ;
