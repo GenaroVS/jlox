@@ -1,0 +1,8 @@
+print "hi" or 2; // "hi".
+print nil or "yes"; // "yes".
+
+var bool = true;
+var str = "Alice";
+
+print bool and str; // "Alice"
+print !bool and str; // true
