@@ -4,6 +4,7 @@ import com.interpreters.jlox.Lox;
 import com.interpreters.jlox.ast.Expr;
 import com.interpreters.jlox.ast.Stmt;
 import com.interpreters.jlox.ast.Token;
+import com.interpreters.jlox.ast.TokenType;
 import com.interpreters.jlox.exceptions.RuntimeError;
 
 import java.util.List;
@@ -13,6 +14,13 @@ import static com.interpreters.jlox.ast.TokenType.*;
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     private Environment env = new Environment();
+    private static class BreakLoop extends RuntimeException {};
+    private static class ContinueLoop extends RuntimeException {
+        public TokenType loopType;
+        public ContinueLoop(TokenType loopType) {
+            this.loopType = loopType;
+        }
+    };
 
     public void interpret(List<Stmt> statements) {
         try {
@@ -46,7 +54,18 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitWhileStmt(Stmt.While stmt) {
-        while (isTruthy(evaluate(stmt.condition))) execute(stmt.body);
+        while (isTruthy(evaluate(stmt.condition))) {
+            try {
+                execute(stmt.body);
+            } catch (BreakLoop e) {
+                break;
+            } catch (ContinueLoop e) {
+                if (stmt.body instanceof Stmt.Block && e.loopType == FOR) {
+                    List<Stmt> body = ((Stmt.Block) stmt.body).statements;
+                    execute(body.get(body.size() - 1));
+                }
+            }
+        }
         return null;
     }
 
@@ -58,6 +77,16 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             execute(stmt.elseBranch);
         }
         return null;
+    }
+
+    @Override
+    public Void visitBreakStmt(Stmt.Break stmt) {
+        throw new BreakLoop();
+    }
+
+    @Override
+    public Void visitContinueStmt(Stmt.Continue stmt) {
+        throw new ContinueLoop(stmt.loopType);
     }
 
     @Override

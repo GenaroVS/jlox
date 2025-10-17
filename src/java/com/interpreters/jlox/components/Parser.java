@@ -17,6 +17,8 @@ public class Parser {
     private int cur = 0;
     private boolean allowSingleExpression;
     private boolean foundSingleExpression = false;
+    private int loopDepth = 0;
+    private TokenType prevLoopType = null;
     private static class ParseError extends RuntimeException {}
 
     public Parser(List<Token> tokens, boolean allowSingleExpression) {
@@ -63,6 +65,8 @@ public class Parser {
     }
 
     private Stmt statement() {
+        if (match(BREAK)) return breakStmt();
+        if (match(CONTINUE)) return continueStmt();
         if (match(PRINT)) return printStatement();
         if (match(FOR)) return forStmt();
         if (match(IF)) return ifStmt();
@@ -70,6 +74,22 @@ public class Parser {
         if (match(LEFT_BRACE)) return block();
 
         return expressionStatement();
+    }
+
+    private Stmt breakStmt() {
+        if (loopDepth <= 0) {
+            error(previous(), "'break' is not in a while or for loop.");
+        }
+        checkWithError(SEMICOLON, "Expect ';' after 'break'.");
+        return new Stmt.Break();
+    }
+
+    private Stmt continueStmt() {
+        if (loopDepth <= 0) {
+            error(previous(), "'continue' is not in a while or for loop.");
+        }
+        checkWithError(SEMICOLON, "Expect ';' after 'continue'.");
+        return new Stmt.Continue(prevLoopType);
     }
 
     private Stmt block() {
@@ -83,6 +103,7 @@ public class Parser {
 
     private Stmt forStmt() {
         checkWithError(LEFT_PAREN, "Expected '(' after 'for'.");
+        prevLoopType = FOR;
         Stmt initializer;
         if (match(SEMICOLON)) {
             initializer = null;
@@ -101,32 +122,42 @@ public class Parser {
             increment = expression();
         }
         checkWithError(RIGHT_PAREN, "Expected ')' after for clauses.");
-        Stmt body = statement();
-        if (increment != null) {
-            body = new Stmt.Block(
-                    Arrays.asList(body, new Stmt.Expression(increment))
-            );
+        try {
+            loopDepth += 1;
+            Stmt body = statement();
+            if (increment != null) {
+                body = new Stmt.Block(
+                        Arrays.asList(body, new Stmt.Expression(increment))
+                );
+            }
+            if (condition != null) {
+                body = new Stmt.While(condition, body);
+            } else {
+                body = new Stmt.While(new Expr.Literal(true), body);
+            }
+            if (initializer != null) {
+                body = new Stmt.Block(
+                        Arrays.asList(initializer, body)
+                );
+            }
+            return body;
+        } finally {
+            loopDepth -= 1;
         }
-        if (condition != null) {
-            body = new Stmt.While(condition, body);
-        } else {
-            body = new Stmt.While(new Expr.Literal(true), body);
-        }
-        if (initializer != null) {
-            body = new Stmt.Block(
-                    Arrays.asList(initializer, body)
-            );
-        }
-
-        return body;
     }
 
     private Stmt whileStmt() {
         checkWithError(LEFT_PAREN, "Expected '(' after 'while'.");
+        prevLoopType = WHILE;
         Expr cond = expression();
         checkWithError(RIGHT_PAREN, "Expected ')' after condition.");
-        Stmt body = statement();
-        return new Stmt.While(cond, body);
+        try {
+            loopDepth += 1;
+            Stmt body = statement();
+            return new Stmt.While(cond, body);
+        } finally {
+            loopDepth -= 1;
+        }
     }
 
     private Stmt ifStmt() {

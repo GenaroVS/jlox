@@ -21,6 +21,7 @@ public enum TokenType {
   // Keywords.
   AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NIL, OR,
   PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
+  BREAK, CONTINUE,
 
   EOF;
 
@@ -44,6 +45,8 @@ public enum TokenType {
     keywords.put("true",   TRUE);
     keywords.put("var",    VAR);
     keywords.put("while",  WHILE);
+    keywords.put("break",  BREAK);
+    keywords.put("continue",  CONTINUE);
   }
 
   public static TokenType getKeyWord(String text) {

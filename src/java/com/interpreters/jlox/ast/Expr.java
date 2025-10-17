@@ -1,5 +1,7 @@
 package com.interpreters.jlox.ast;
 
+import java.util.List;
+
 public abstract class Expr {
 
     public interface Visitor<R> {

@@ -29,6 +29,8 @@ public class GenerateAST {
                 "Block      : List<Stmt> statements",
                 "While      : Expr condition, Stmt body",
                 "If         : Expr condition, Stmt thenBranch, Stmt elseBranch",
+                "Break      : ",
+                "Continue   : TokenType loopType",
                 "Var        : Token name, Expr initializer",
                 "Expression : Expr expression",
                 "Print      : Expr expression"
@@ -64,7 +66,12 @@ public class GenerateAST {
         writer.println("    public static class " + className + " extends " + baseName + " {");
 
         // Fields.
-        String[] fields = fieldList.split(", ");
+        String[] fields;
+        if (fieldList.isEmpty()) {
+            fields = new String[0];
+        } else {
+            fields = fieldList.split(", ");
+        }
         writer.println();
         for (String field : fields) {
             writer.println("        public final " + field + ";");
