@@ -7,6 +7,7 @@ import com.interpreters.jlox.ast.Token;
 import com.interpreters.jlox.ast.TokenType;
 import com.interpreters.jlox.exceptions.RuntimeError;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.interpreters.jlox.ast.TokenType.*;
@@ -245,6 +246,24 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             return !isTruthy(val);
         }
         return null;
+    }
+
+    @Override
+    public Object visitCallExpr(Expr.Call expr) {
+        Object callee = evaluate(expr.callee);
+        List<Object> args = new ArrayList<>();
+        for (Expr arg : expr.arguments) {
+            args.add(evaluate(arg));
+        }
+        if (!(callee instanceof LoxCallable)) {
+            throw new RuntimeError(expr.paren, "Can only call functions and class methods");
+        }
+        LoxCallable function = (LoxCallable) callee;
+        if (args.size() != function.arity()) {
+            throw new RuntimeError(expr.paren,
+                    String.format("Expected %d arguments but got %d.", function.arity(), args.size()));
+        }
+        return function.call(this, args);
     }
 
     @Override

@@ -300,21 +300,28 @@ public class Parser {
 
     private Expr call() {
         Expr expr = primary();
-        if (match(LEFT_PAREN)) {
-            List<Expr> arguments = new ArrayList<>();
-            Expr arg = expression();
-            while (match(COMMA)) {
-                arguments.add(arg);
-                arg = expression();
+        while (true) {
+            if (match(LEFT_PAREN)) {
+                expr = arguments(expr);
+            } else {
+                break;
             }
-            checkWithError(RIGHT_PAREN, "Expect ')' after function arguments");
-            return new Expr.Call(expr, previous(), arguments);
         }
         return expr;
     }
 
-    private Expr arguments() {
-        return null;
+    private Expr arguments(Expr func) {
+        List<Expr> arguments = new ArrayList<>();
+        if (!check(RIGHT_PAREN)) {
+            do {
+                if (arguments.size() >= 255) {
+                    error(peek(), "Can't have more than 255 arguments to a function.");
+                }
+                arguments.add(expression());
+            } while (match(COMMA));
+        }
+        Token paren = checkWithError(RIGHT_PAREN, "Expect ')' after function arguments");
+        return new Expr.Call(func, paren, arguments);
     }
 
     private Expr primary() {
