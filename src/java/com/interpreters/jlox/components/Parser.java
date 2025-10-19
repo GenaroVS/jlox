@@ -295,7 +295,26 @@ public class Parser {
             Token operator = previous();
             return new Expr.Unary(operator, unary());
         }
-        return primary();
+        return call();
+    }
+
+    private Expr call() {
+        Expr expr = primary();
+        if (match(LEFT_PAREN)) {
+            List<Expr> arguments = new ArrayList<>();
+            Expr arg = expression();
+            while (match(COMMA)) {
+                arguments.add(arg);
+                arg = expression();
+            }
+            checkWithError(RIGHT_PAREN, "Expect ')' after function arguments");
+            return new Expr.Call(expr, previous(), arguments);
+        }
+        return expr;
+    }
+
+    private Expr arguments() {
+        return null;
     }
 
     private Expr primary() {

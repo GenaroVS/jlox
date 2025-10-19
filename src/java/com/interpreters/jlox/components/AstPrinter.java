@@ -9,6 +9,12 @@ public class AstPrinter implements Expr.Visitor<String> {
     }
 
     @Override
+    public String visitCallExpr(Expr.Call expr) {
+        Expr[] args = (Expr[])expr.arguments.toArray();
+        return parenthesize("func: " + print(expr.callee), args);
+    }
+
+    @Override
     public String visitAssignExpr(Expr.Assign expr) {
         return parenthesize("assign " + expr.name.lexeme , expr.value);
     }

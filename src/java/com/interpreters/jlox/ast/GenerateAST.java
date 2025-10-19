@@ -22,6 +22,7 @@ public class GenerateAST {
                 "Literal  : Object value",
                 "Variable : Token name",
                 "Unary    : Token operator, Expr right",
+                "Call     : Expr callee, Token paren, List<Expr> arguments",
                 "Ternary  : Expr predicate, Expr left, Expr right"
         ));
 
