@@ -34,6 +34,7 @@ public class GenerateAST {
                 "Continue   : TokenType loopType",
                 "Var        : Token name, Expr initializer",
                 "Expression : Expr expression",
+                "Function   : Token name, List<Token> params, List<Stmt> body",
                 "Print      : Expr expression"
         ));
     }

@@ -72,6 +72,7 @@ public class Parser {
         if (match(IF)) return ifStmt();
         if (match(WHILE)) return whileStmt();
         if (match(LEFT_BRACE)) return block();
+        if (match(FUN)) return function();
 
         return expressionStatement();
     }
@@ -181,6 +182,24 @@ public class Parser {
             checkWithError(SEMICOLON, "Expect ';' after expression.");
         }
         return new Stmt.Expression(expr);
+    }
+
+    private Stmt function() {
+        Token name = checkWithError(IDENTIFIER, "Expect function name.");
+        List<Token> params = new ArrayList<>();
+        checkWithError(LEFT_PAREN, "Expect '(' after function name.");
+        if (!check(RIGHT_PAREN)) {
+            do {
+                if (params.size() >= 255) {
+                    error(peek(), "Can't have more than 255 parameters in a function.");
+                }
+                params.add(checkWithError(IDENTIFIER, "Expect parameter name."));
+            } while (match(COMMA));
+        }
+        checkWithError(RIGHT_PAREN, "Expect ')' after function parameters.");
+        checkWithError(LEFT_BRACE, "Expect '{' before function body");
+        List<Stmt> body = ((Stmt.Block) block()).statements;
+        return new Stmt.Function(name, params, body);
     }
 
     private Stmt printStatement() {
@@ -317,7 +336,20 @@ public class Parser {
                 if (arguments.size() >= 255) {
                     error(peek(), "Can't have more than 255 arguments to a function.");
                 }
-                arguments.add(expression());
+                Expr arg = expression();
+                // when parsing arguments, handle perceived comma operator
+                // as just parsing 2 arguments at a time.
+                if (arg instanceof Expr.Binary) {
+                    Expr.Binary binaryExpr = (Expr.Binary) arg;
+                    if (binaryExpr.operator.type == COMMA) {
+                        arguments.add(binaryExpr.left);
+                        arguments.add(binaryExpr.right);
+                    } else {
+                        arguments.add(arg);
+                    }
+                } else {
+                    arguments.add(arg);
+                }
             } while (match(COMMA));
         }
         Token paren = checkWithError(RIGHT_PAREN, "Expect ')' after function arguments");

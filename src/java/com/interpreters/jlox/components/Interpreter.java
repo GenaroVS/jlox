@@ -5,6 +5,7 @@ import com.interpreters.jlox.ast.Expr;
 import com.interpreters.jlox.ast.Stmt;
 import com.interpreters.jlox.ast.Token;
 import com.interpreters.jlox.ast.TokenType;
+import com.interpreters.jlox.components.impl.LoxFunction;
 import com.interpreters.jlox.exceptions.RuntimeError;
 
 import java.util.ArrayList;
@@ -14,7 +15,8 @@ import static com.interpreters.jlox.ast.TokenType.*;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
-    private Environment env = new Environment();
+    public final Environment globals = new Environment();
+    private Environment env = globals;
     private static class BreakLoop extends RuntimeException {};
     private static class ContinueLoop extends RuntimeException {
         public TokenType loopType;
@@ -22,6 +24,20 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             this.loopType = loopType;
         }
     };
+
+    public Interpreter() {
+        globals.define("clock", new LoxCallable() {
+            @Override
+            public Object call(Interpreter interpreter, List<Object> arguments) {
+                return (double) System.currentTimeMillis();
+            }
+
+            @Override
+            public int arity() {
+                return 0;
+            }
+        });
+    }
 
     public void interpret(List<Stmt> statements) {
         try {
@@ -49,8 +65,20 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitBlockStmt(Stmt.Block stmt) {
-        executeBlock(stmt.statements, env);
+        executeBlock(stmt.statements, new Environment(this.env));
         return null;
+    }
+
+    public void executeBlock(List<Stmt> statements, Environment env) {
+        Environment previous = this.env;
+        try {
+            this.env = env;
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
+        } finally {
+            this.env = previous;
+        }
     }
 
     @Override
@@ -100,6 +128,12 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitExpressionStmt(Stmt.Expression stmt) {
         evaluate(stmt.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitFunctionStmt(Stmt.Function stmt) {
+        env.define(stmt.name.lexeme, new LoxFunction(stmt));
         return null;
     }
 
@@ -282,18 +316,6 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     private void execute(Stmt stmt) {
         stmt.accept(this);
-    }
-
-    private void executeBlock(List<Stmt> statements, Environment env) {
-        Environment previous = this.env;
-        try {
-            this.env = env;
-            for (Stmt statement : statements) {
-                execute(statement);
-            }
-        } finally {
-            this.env = previous;
-        }
     }
 
     private boolean isTruthy(Object val) {

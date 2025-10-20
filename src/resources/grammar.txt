@@ -22,7 +22,7 @@ Comma       ,           Left
 ------------------------ RULES WITH PRECEDENCE (lowest to highest) ---------------------------
 
 program       -> declaration* EOF ;
-declaration   -> varDeclare | statement;
+declaration   -> varDeclare | statement | funDeclare ;
 varDeclare    -> "var" IDENTIFIER ( "=" expression )? ";" ;
 statement     -> exprStmt | printStmt | block | ifStmt | forStmt ;
 forStmt       -> "for" "(" ( varDeclare | exprStmt | ";" ) expression? ";" expression? ")" statement ;
@@ -44,4 +44,7 @@ factor        -> unary ( "/" | "*" ) unary | unary ;
 unary         -> ( "!" | "-" ) unary | call ;
 call          -> primary ( "(" arguments? ")" )* ;
 arguments     -> expression ( "," expression )* ;
+funDecl       -> "fun" function ;
+function      -> IDENTIFIER "(" parameters? ")" block ;
+parameters    -> IDENTIFIER ( "," IDENTIFIER )* ;
 primary       -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER ;
