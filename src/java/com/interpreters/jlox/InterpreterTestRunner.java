@@ -88,7 +88,7 @@ public class InterpreterTestRunner {
             outThread.join();
             errThread.join();
 
-            String actualOutput = stdout.toString();
+            String actualOutput = stderr.length() > 0 ? stdout.toString() + stderr : stdout.toString();
 
             if (GENERATE_MODE) {
                 //println(expectedOutputPath.toString());
