@@ -21,9 +21,17 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     private static class ContinueLoop extends RuntimeException {
         public TokenType loopType;
         public ContinueLoop(TokenType loopType) {
+            super(null, null, false, false);
             this.loopType = loopType;
         }
     };
+    public static class Return extends RuntimeException {
+        public Object value;
+        public Return(Object value) {
+            super(null, null, false, false);
+            this.value = value;
+        }
+    }
 
     public Interpreter() {
         globals.define("clock", new LoxCallable() {
@@ -135,6 +143,11 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     public Void visitFunctionStmt(Stmt.Function stmt) {
         env.define(stmt.name.lexeme, new LoxFunction(stmt));
         return null;
+    }
+
+    @Override
+    public Void visitReturnStmt(Stmt.Return stmt) {
+        throw new Return(stmt.value != null ? evaluate(stmt.value) : null);
     }
 
     @Override

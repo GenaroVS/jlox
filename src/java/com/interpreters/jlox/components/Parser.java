@@ -73,6 +73,7 @@ public class Parser {
         if (match(WHILE)) return whileStmt();
         if (match(LEFT_BRACE)) return block();
         if (match(FUN)) return function();
+        if (match(RETURN)) return returnStmt();
 
         return expressionStatement();
     }
@@ -200,6 +201,16 @@ public class Parser {
         checkWithError(LEFT_BRACE, "Expect '{' before function body");
         List<Stmt> body = ((Stmt.Block) block()).statements;
         return new Stmt.Function(name, params, body);
+    }
+
+    private Stmt returnStmt() {
+        Token keyword = previous();
+        Expr value = null;
+        if (!check(SEMICOLON)) {
+            value = expression();
+        }
+        checkWithError(SEMICOLON, "Expect ';' after return value.");
+        return new Stmt.Return(keyword, value);
     }
 
     private Stmt printStatement() {

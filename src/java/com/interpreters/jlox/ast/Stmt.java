@@ -13,6 +13,7 @@ public abstract class Stmt {
         R visitVarStmt(Var stmt);
         R visitExpressionStmt(Expression stmt);
         R visitFunctionStmt(Function stmt);
+        R visitReturnStmt(Return stmt);
         R visitPrintStmt(Print stmt);
     }
 
@@ -137,6 +138,22 @@ public abstract class Stmt {
         @Override
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitFunctionStmt(this);
+        }
+    }
+
+    public static class Return extends Stmt {
+
+        public final Token keyword;
+        public final Expr value;
+
+        public Return(Token keyword, Expr value) {
+            this.keyword = keyword;
+            this.value = value;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitReturnStmt(this);
         }
     }
 

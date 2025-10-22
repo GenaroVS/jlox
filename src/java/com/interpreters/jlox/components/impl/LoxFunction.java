@@ -24,8 +24,12 @@ public class LoxFunction implements LoxCallable {
             Object arg = arguments.get(i);
             funEnv.define(param.lexeme, arg);
         }
-        interpreter.executeBlock(declaration.body, funEnv);
-        return null;
+        try {
+            interpreter.executeBlock(declaration.body, funEnv);
+            return null;
+        } catch (Interpreter.Return e) {
+            return e.value;
+        }
     }
 
     @Override

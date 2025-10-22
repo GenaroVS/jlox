@@ -24,7 +24,8 @@ Comma       ,           Left
 program       -> declaration* EOF ;
 declaration   -> varDeclare | statement | funDeclare ;
 varDeclare    -> "var" IDENTIFIER ( "=" expression )? ";" ;
-statement     -> exprStmt | printStmt | block | ifStmt | forStmt ;
+statement     -> exprStmt | printStmt | block | ifStmt | forStmt | returnStmt;
+returnStmt    -> "return" expression? ";" ;
 forStmt       -> "for" "(" ( varDeclare | exprStmt | ";" ) expression? ";" expression? ")" statement ;
 while         -> "while" "(" expression ")" statement ;
 block         -> "{" declaration* "}" ;
