@@ -72,7 +72,7 @@ public class Parser {
         if (match(IF)) return ifStmt();
         if (match(WHILE)) return whileStmt();
         if (match(LEFT_BRACE)) return block();
-        if (match(FUN)) return function();
+        if (match(FUN)) return function(false);
         if (match(RETURN)) return returnStmt();
 
         return expressionStatement();
@@ -185,8 +185,11 @@ public class Parser {
         return new Stmt.Expression(expr);
     }
 
-    private Stmt function() {
-        Token name = checkWithError(IDENTIFIER, "Expect function name.");
+    private Stmt function(boolean isExpression) {
+        Token name = null;
+        if (!isExpression) {
+            checkWithError(IDENTIFIER, "Expect function name.");
+        }
         List<Token> params = new ArrayList<>();
         checkWithError(LEFT_PAREN, "Expect '(' after function name.");
         if (!check(RIGHT_PAREN)) {
@@ -220,6 +223,10 @@ public class Parser {
     }
 
     private Expr expression() {
+        if (match(FUN)) {
+            Stmt.Function function = (Stmt.Function) function(true);
+            return new Expr.Lambda(function.params, function.body);
+        }
         return comma();
     }
 

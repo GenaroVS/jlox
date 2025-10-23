@@ -1,7 +1,9 @@
 package com.interpreters.jlox.components.impl;
 
+import com.interpreters.jlox.ast.Expr;
 import com.interpreters.jlox.ast.Stmt;
 import com.interpreters.jlox.ast.Token;
+import com.interpreters.jlox.ast.TokenType;
 import com.interpreters.jlox.components.Environment;
 import com.interpreters.jlox.components.Interpreter;
 import com.interpreters.jlox.components.LoxCallable;
@@ -15,6 +17,13 @@ public class LoxFunction implements LoxCallable {
 
     public LoxFunction(Stmt.Function declaration, Environment closure) {
         this.declaration = declaration;
+        this.closure = closure;
+    }
+
+    public LoxFunction(Expr.Lambda declaration, Environment closure) {
+        this.declaration = new Stmt.Function(
+                new Token(TokenType.IDENTIFIER, "lambda", null, 0),
+                declaration.params, declaration.body);
         this.closure = closure;
     }
 

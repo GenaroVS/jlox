@@ -314,6 +314,11 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitLambdaExpr(Expr.Lambda expr) {
+        return new LoxFunction(expr, env);
+    }
+
+    @Override
     public Object visitTernaryExpr(Expr.Ternary expr) {
         boolean predicateRes = isTruthy(evaluate(expr.predicate));
         if (predicateRes) {

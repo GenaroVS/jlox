@@ -32,7 +32,7 @@ block         -> "{" declaration* "}" ;
 ifStm         -> "if" "(" expression ")" statement ( "else" statement )? ;
 exprStmt      -> expression ";" ;
 printStmt     -> "print" expression ";" ;
-expression    -> Comma
+expression    -> Comma | funDecl
 Comma         -> assignment ( "," assignment )* ;
 assignment    -> IDENTIFIER ( ( "=" | "+=" | "*=" | "/=") assignment | ternary ;
 ternary       -> equality ( "?" expression ":" ternary)? ;
@@ -46,6 +46,6 @@ unary         -> ( "!" | "-" ) unary | call ;
 call          -> primary ( "(" arguments? ")" )* ;
 arguments     -> expression ( "," expression )* ;
 funDecl       -> "fun" function ;
-function      -> IDENTIFIER "(" parameters? ")" block ;
+function      -> IDENTIFIER? "(" parameters? ")" block ;
 parameters    -> IDENTIFIER ( "," IDENTIFIER )* ;
 primary       -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER ;
