@@ -188,7 +188,7 @@ public class Parser {
     private Stmt function(boolean isExpression) {
         Token name = null;
         if (!isExpression) {
-            checkWithError(IDENTIFIER, "Expect function name.");
+            name = checkWithError(IDENTIFIER, "Expect function name.");
         }
         List<Token> params = new ArrayList<>();
         checkWithError(LEFT_PAREN, "Expect '(' after function name.");
@@ -319,7 +319,7 @@ public class Parser {
 
     private Expr factor() {
         Expr expr = unary();
-        if (match(SLASH, STAR)) {
+        while (match(SLASH, STAR)) {
             Token operator = previous();
             Expr right = unary();
             expr = new Expr.Binary(expr, operator, right);
