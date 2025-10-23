@@ -46,6 +46,7 @@ unary         -> ( "!" | "-" ) unary | call ;
 call          -> primary ( "(" arguments? ")" )* ;
 arguments     -> expression ( "," expression )* ;
 funDecl       -> "fun" function ;
-function      -> IDENTIFIER? "(" parameters? ")" block ;
+function      -> IDENTIFIER functionBody ;
+functionBody  -> "(" parameters? ")" block ;
 parameters    -> IDENTIFIER ( "," IDENTIFIER )* ;
 primary       -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER ;

@@ -1,9 +1,7 @@
 package com.interpreters.jlox.components.impl;
 
 import com.interpreters.jlox.ast.Expr;
-import com.interpreters.jlox.ast.Stmt;
 import com.interpreters.jlox.ast.Token;
-import com.interpreters.jlox.ast.TokenType;
 import com.interpreters.jlox.components.Environment;
 import com.interpreters.jlox.components.Interpreter;
 import com.interpreters.jlox.components.LoxCallable;
@@ -12,18 +10,13 @@ import java.util.List;
 
 public class LoxFunction implements LoxCallable {
 
-    private final Stmt.Function declaration;
+    private final String name;
+    private final Expr.Lambda declaration;
     private final Environment closure;
 
-    public LoxFunction(Stmt.Function declaration, Environment closure) {
+    public LoxFunction(String name, Expr.Lambda declaration, Environment closure) {
+        this.name = name;
         this.declaration = declaration;
-        this.closure = closure;
-    }
-
-    public LoxFunction(Expr.Lambda declaration, Environment closure) {
-        this.declaration = new Stmt.Function(
-                new Token(TokenType.IDENTIFIER, "lambda", null, 0),
-                declaration.params, declaration.body);
         this.closure = closure;
     }
 
@@ -50,6 +43,6 @@ public class LoxFunction implements LoxCallable {
 
     @Override
     public String toString() {
-        return "<fn " + declaration.name.lexeme + ">";
+        return "<fn " + name + ">";
     }
 }
