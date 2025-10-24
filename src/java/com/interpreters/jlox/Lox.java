@@ -6,6 +6,7 @@ import com.interpreters.jlox.ast.TokenType;
 import com.interpreters.jlox.components.Interpreter;
 import com.interpreters.jlox.components.Parser;
 import com.interpreters.jlox.components.Scanner;
+import com.interpreters.jlox.components.Resolver;
 import com.interpreters.jlox.exceptions.RuntimeError;
 
 import java.io.BufferedReader;
@@ -59,7 +60,10 @@ public class Lox {
         Parser parser = new Parser(scanner.scanTokens(), allowSingleExpressions);
         List<Stmt> statements = parser.parse();
         //System.out.println(new AstPrinter().print(expression));
-        if (hadParserError || statements == null) return;
+        if (statements == null) return;
+        Resolver resolver = new Resolver(interpreter);
+        resolver.resolve(statements);
+        if (hadParserError) return;
         interpreter.interpret(statements);
     }
 

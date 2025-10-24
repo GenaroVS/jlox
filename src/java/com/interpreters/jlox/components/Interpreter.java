@@ -9,7 +9,9 @@ import com.interpreters.jlox.components.impl.LoxFunction;
 import com.interpreters.jlox.exceptions.RuntimeError;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.interpreters.jlox.ast.TokenType.*;
 
@@ -17,6 +19,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     public final Environment globals = new Environment();
     private Environment env = globals;
+    public final Map<Expr, Integer> locals = new HashMap<>();
     private static class BreakLoop extends RuntimeException {};
     private static class ContinueLoop extends RuntimeException {
         public TokenType loopType;
@@ -158,13 +161,6 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
-    public Object visitAssignExpr(Expr.Assign expr) {
-        Object val = evaluate(expr.value);
-        env.assign(expr.name, val);
-        return val;
-    }
-
-    @Override
     public Object visitBinaryExpr(Expr.Binary expr) {
         Object left = evaluate(expr.left);
         Object right = evaluate(expr.right);
@@ -280,7 +276,24 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Object visitVariableExpr(Expr.Variable expr) {
-        return env.get(expr.name);
+        Integer depth = locals.get(expr);
+        if (depth != null) {
+            return env.getAt(depth, expr.name.lexeme);
+        } else {
+            return globals.get(expr.name);
+        }
+    }
+
+    @Override
+    public Object visitAssignExpr(Expr.Assign expr) {
+        Object val = evaluate(expr.value);
+        Integer depth = locals.get(expr);
+        if (depth != null) {
+            env.assignAt(depth, expr.name, val);
+        } else {
+            globals.assign(expr.name, val);
+        }
+        return val;
     }
 
     @Override
@@ -334,6 +347,20 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     private void execute(Stmt stmt) {
         stmt.accept(this);
+    }
+
+    public void resolve(Expr expr, int scopeDepth) {
+        locals.put(expr, scopeDepth);
+    }
+
+    // TODO is there duplicate logic that would justify this?
+    private Object lookupVariable(Token name, Expr expr) {
+        Integer depth = locals.get(expr);
+        if (depth != null) {
+            return env.getAt(depth, name.lexeme);
+        } else {
+            return globals.get(name);
+        }
     }
 
     private boolean isTruthy(Object val) {

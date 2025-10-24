@@ -34,11 +34,27 @@ public class Environment {
         throw new RuntimeError(name, String.format("Undefined variable '%s'.", name.lexeme));
     }
 
+    public void assignAt(int depth, Token name, Object val) {
+        getAncestor(depth).values.put(name.lexeme, val);
+    }
+
     public Object get(Token token) {
         if (values.containsKey(token.lexeme)) {
             return values.get(token.lexeme);
         }
         if (enclosing != null) return enclosing.get(token);
         throw new RuntimeError(token, String.format("Undefined variable '%s'.", token.lexeme));
+    }
+
+    public Object getAt(int depth, String name) {
+        return getAncestor(depth).values.get(name);
+    }
+
+    private Environment getAncestor(int depth) {
+        Environment localEnv = this;
+        while (depth-- > 0) {
+            localEnv = localEnv.enclosing;
+        }
+        return localEnv;
     }
 }

@@ -72,7 +72,7 @@ public class Parser {
         if (match(IF)) return ifStmt();
         if (match(WHILE)) return whileStmt();
         if (match(LEFT_BRACE)) return block();
-        if (match(FUN)) return function();
+        if (match(FUN) && checkNext(IDENTIFIER)) return function();
         if (match(RETURN)) return returnStmt();
 
         return expressionStatement();
@@ -434,6 +434,11 @@ public class Parser {
         return tokens.get(cur - 1);
     }
 
+    private boolean checkNext(TokenType tokenType) {
+        if (isAtEnd()) return false;
+        if (tokens.get(cur + 1).type == EOF) return false;
+        return tokens.get(cur + 1).type == tokenType;
+    }
     private ParseError error(Token token, String message) {
         Lox.error(token, message);
         return new ParseError();
