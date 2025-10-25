@@ -97,7 +97,7 @@ public class InterpreterTestRunner {
             } else {
                 String expectedOutput = readExpectedOutput(expectedOutputPath);
                 boolean passed = normalize(expectedOutput).equals(normalize(actualOutput));
-                return new TestResult(program, passed, exitCode, actualOutput, stderr.toString(), expectedOutput);
+                return new TestResult(program, passed, exitCode, stdout.toString(), stderr.toString(), expectedOutput);
             }
         } catch (Exception e) {
             return new TestResult(program, false, -1, stdout.toString(), stderr.toString(),

@@ -4,6 +4,7 @@ import com.interpreters.jlox.Lox;
 import com.interpreters.jlox.ast.Expr;
 import com.interpreters.jlox.ast.Stmt;
 import com.interpreters.jlox.ast.Token;
+import com.interpreters.jlox.components.impl.FunctionType;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +15,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     private final Interpreter interpreter;
     private final Stack<Map<String, Boolean>> scopes = new Stack<>();
+    private FunctionType curFunction = FunctionType.NONE;
 
     public Resolver(Interpreter interpreter) {
         this.interpreter = interpreter;
@@ -72,7 +74,10 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     public Void visitFunctionStmt(Stmt.Function stmt) {
         declare(stmt.name);
         define(stmt.name);
+        FunctionType prev = curFunction;
+        curFunction = FunctionType.FUNCTION;
         resolve(stmt.lambda);
+        curFunction = prev;
         return null;
     }
 
@@ -80,8 +85,8 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     public Void visitLambdaExpr(Expr.Lambda lambda) {
         beginScope();
         for (Token param : lambda.params) {
-            define(param);
             declare(param);
+            define(param);
         }
         resolve(lambda.body);
         endScope();
@@ -196,6 +201,9 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitReturnStmt(Stmt.Return stmt) {
+        if (curFunction == FunctionType.NONE) {
+            Lox.error(stmt.keyword, "Can't return from top-level code.");
+        }
         if (stmt.value != null) {
             resolve(stmt.value);
         }

@@ -72,7 +72,10 @@ public class Parser {
         if (match(IF)) return ifStmt();
         if (match(WHILE)) return whileStmt();
         if (match(LEFT_BRACE)) return block();
-        if (match(FUN) && checkNext(IDENTIFIER)) return function();
+        if (check(FUN) && checkNext(IDENTIFIER)) {
+            advance();
+            return function();
+        }
         if (match(RETURN)) return returnStmt();
 
         return expressionStatement();
