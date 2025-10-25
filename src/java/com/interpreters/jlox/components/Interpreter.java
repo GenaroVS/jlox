@@ -8,10 +8,7 @@ import com.interpreters.jlox.ast.TokenType;
 import com.interpreters.jlox.components.impl.LoxFunction;
 import com.interpreters.jlox.exceptions.RuntimeError;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.interpreters.jlox.ast.TokenType.*;
 
@@ -102,7 +99,11 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             } catch (ContinueLoop e) {
                 if (stmt.body instanceof Stmt.Block && e.loopType == FOR) {
                     List<Stmt> body = ((Stmt.Block) stmt.body).statements;
-                    execute(body.get(body.size() - 1));
+                    // We need to put the increment expression back into a block to resemble the existing scope
+                    // otherwise variable resolving won't work in the increment expression
+                    Stmt incrementExpr = body.get(body.size() - 1);
+                    Stmt.Block incrementBlock = new Stmt.Block(List.of(incrementExpr));
+                    execute(incrementBlock);
                 }
             }
         }
@@ -351,16 +352,6 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     public void resolve(Expr expr, int scopeDepth) {
         locals.put(expr, scopeDepth);
-    }
-
-    // TODO is there duplicate logic that would justify this?
-    private Object lookupVariable(Token name, Expr expr) {
-        Integer depth = locals.get(expr);
-        if (depth != null) {
-            return env.getAt(depth, name.lexeme);
-        } else {
-            return globals.get(name);
-        }
     }
 
     private boolean isTruthy(Object val) {
