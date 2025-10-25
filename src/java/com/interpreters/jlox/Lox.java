@@ -67,6 +67,11 @@ public class Lox {
         interpreter.interpret(statements);
     }
 
+    public static void warn(Token token, String message) {
+        error(token, message);
+        hadParserError = false;
+    }
+
     public static void runtimeError(RuntimeError error) {
         report(error.token.line, "", error.getMessage());
         hadRuntimeError = true;
