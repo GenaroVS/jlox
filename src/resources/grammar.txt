@@ -22,7 +22,7 @@ Comma       ,           Left
 ------------------------ RULES WITH PRECEDENCE (lowest to highest) ---------------------------
 
 program       -> declaration* EOF ;
-declaration   -> varDeclare | statement | funDeclare ;
+declaration   -> varDeclare | statement | funDeclare | classDecl ;
 varDeclare    -> "var" IDENTIFIER ( "=" expression )? ";" ;
 statement     -> exprStmt | printStmt | block | ifStmt | forStmt | returnStmt;
 returnStmt    -> "return" expression? ";" ;
@@ -34,7 +34,7 @@ exprStmt      -> expression ";" ;
 printStmt     -> "print" expression ";" ;
 expression    -> Comma | funDecl
 Comma         -> assignment ( "," assignment )* ;
-assignment    -> IDENTIFIER ( ( "=" | "+=" | "*=" | "/=") assignment | ternary ;
+assignment    -> ( call ".")? IDENTIFIER ( ( "=" | "+=" | "*=" | "/=") assignment | ternary ;
 ternary       -> equality ( "?" expression ":" ternary)? ;
 logic_or      -> logic_and ( "or" logic_and )* ;
 logic_and     -> equality ( "and" equality )* ;
@@ -43,10 +43,11 @@ comparison    -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term          -> factor ( ( "-" | "+" ) factor )* ;
 factor        -> unary ( "/" | "*" ) unary | unary ;
 unary         -> ( "!" | "-" ) unary | call ;
-call          -> primary ( "(" arguments? ")" )* ;
+call          -> primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
 arguments     -> expression ( "," expression )* ;
 funDecl       -> "fun" function ;
 function      -> IDENTIFIER functionBody ;
 functionBody  -> "(" parameters? ")" block ;
 parameters    -> IDENTIFIER ( "," IDENTIFIER )* ;
+classDecl     -> "class" IDENTIFIER "{" function+ "}" ;
 primary       -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER ;

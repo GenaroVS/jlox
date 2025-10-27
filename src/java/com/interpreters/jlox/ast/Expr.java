@@ -5,35 +5,21 @@ import java.util.List;
 public abstract class Expr {
 
     public interface Visitor<R> {
-        R visitAssignExpr(Assign expr);
         R visitBinaryExpr(Binary expr);
         R visitLogicalExpr(Logical expr);
         R visitGroupingExpr(Grouping expr);
+        R visitTernaryExpr(Ternary expr);
+        R visitUnaryExpr(Unary expr);
         R visitLiteralExpr(Literal expr);
         R visitVariableExpr(Variable expr);
-        R visitUnaryExpr(Unary expr);
+        R visitAssignExpr(Assign expr);
         R visitCallExpr(Call expr);
+        R visitGetExpr(Get expr);
+        R visitSetExpr(Set expr);
         R visitLambdaExpr(Lambda expr);
-        R visitTernaryExpr(Ternary expr);
     }
 
     public abstract <R> R accept(Visitor<R> visitor);
-
-    public static class Assign extends Expr {
-
-        public final Token name;
-        public final Expr value;
-
-        public Assign(Token name, Expr value) {
-            this.name = name;
-            this.value = value;
-        }
-
-        @Override
-        public <R> R accept(Visitor<R> visitor) {
-            return visitor.visitAssignExpr(this);
-        }
-    }
 
     public static class Binary extends Expr {
 
@@ -85,6 +71,40 @@ public abstract class Expr {
         }
     }
 
+    public static class Ternary extends Expr {
+
+        public final Expr predicate;
+        public final Expr left;
+        public final Expr right;
+
+        public Ternary(Expr predicate, Expr left, Expr right) {
+            this.predicate = predicate;
+            this.left = left;
+            this.right = right;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitTernaryExpr(this);
+        }
+    }
+
+    public static class Unary extends Expr {
+
+        public final Token operator;
+        public final Expr right;
+
+        public Unary(Token operator, Expr right) {
+            this.operator = operator;
+            this.right = right;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitUnaryExpr(this);
+        }
+    }
+
     public static class Literal extends Expr {
 
         public final Object value;
@@ -113,19 +133,19 @@ public abstract class Expr {
         }
     }
 
-    public static class Unary extends Expr {
+    public static class Assign extends Expr {
 
-        public final Token operator;
-        public final Expr right;
+        public final Token name;
+        public final Expr value;
 
-        public Unary(Token operator, Expr right) {
-            this.operator = operator;
-            this.right = right;
+        public Assign(Token name, Expr value) {
+            this.name = name;
+            this.value = value;
         }
 
         @Override
         public <R> R accept(Visitor<R> visitor) {
-            return visitor.visitUnaryExpr(this);
+            return visitor.visitAssignExpr(this);
         }
     }
 
@@ -147,6 +167,40 @@ public abstract class Expr {
         }
     }
 
+    public static class Get extends Expr {
+
+        public final Token name;
+        public final Expr object;
+
+        public Get(Token name, Expr object) {
+            this.name = name;
+            this.object = object;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitGetExpr(this);
+        }
+    }
+
+    public static class Set extends Expr {
+
+        public final Expr object;
+        public final Token name;
+        public final Expr value;
+
+        public Set(Expr object, Token name, Expr value) {
+            this.object = object;
+            this.name = name;
+            this.value = value;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitSetExpr(this);
+        }
+    }
+
     public static class Lambda extends Expr {
 
         public final List<Token> params;
@@ -160,24 +214,6 @@ public abstract class Expr {
         @Override
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitLambdaExpr(this);
-        }
-    }
-
-    public static class Ternary extends Expr {
-
-        public final Expr predicate;
-        public final Expr left;
-        public final Expr right;
-
-        public Ternary(Expr predicate, Expr left, Expr right) {
-            this.predicate = predicate;
-            this.left = left;
-            this.right = right;
-        }
-
-        @Override
-        public <R> R accept(Visitor<R> visitor) {
-            return visitor.visitTernaryExpr(this);
         }
     }
 

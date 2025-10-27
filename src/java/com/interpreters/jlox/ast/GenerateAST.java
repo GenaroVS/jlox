@@ -24,6 +24,8 @@ public class GenerateAST {
                 "Variable : Token name",
                 "Assign   : Token name, Expr value",
                 "Call     : Expr callee, Token paren, List<Expr> arguments",
+                "Get      : Token name, Expr object",
+                "Set      : Expr object, Token name, Expr value",
                 "Lambda : List<Token> params, List<Stmt> body"
         ));
 
@@ -35,8 +37,9 @@ public class GenerateAST {
                 "Continue   : TokenType loopType",
                 "Var        : Token name, Expr initializer",
                 "Expression : Expr expression",
-                "Function   : Token name, List<Token> params, List<Stmt> body",
+                "Function   : Token name, Expr.Lambda lambda",
                 "Return     : Token keyword, Expr value",
+                "Class      : Token name, List<Stmt.Function> methods",
                 "Print      : Expr expression"
         ));
     }

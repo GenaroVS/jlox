@@ -76,6 +76,7 @@ public class Parser {
             advance();
             return function();
         }
+        if (match(CLASS)) return classDeclaration();
         if (match(RETURN)) return returnStmt();
 
         return expressionStatement();
@@ -193,7 +194,7 @@ public class Parser {
         return new Stmt.Function(name, lambda());
     }
 
-    private Expr.Lambda lambda( ) {
+    private Expr.Lambda lambda() {
         List<Token> params = new ArrayList<>();
         checkWithError(LEFT_PAREN, "Expect '(' after function name.");
         if (!check(RIGHT_PAREN)) {
@@ -218,6 +219,19 @@ public class Parser {
         }
         checkWithError(SEMICOLON, "Expect ';' after return value.");
         return new Stmt.Return(keyword, value);
+    }
+
+    private Stmt classDeclaration() {
+        Token name = checkWithError(IDENTIFIER, "Expect a class name.");
+        checkWithError(LEFT_BRACE, "Expect '{' before class body.");
+
+        List<Stmt.Function> methods = new ArrayList<>();
+        while (!check(RIGHT_BRACE) && !isAtEnd()) {
+            methods.add((Stmt.Function) function());
+        }
+
+        checkWithError(RIGHT_BRACE, "Expect '{' after class body.");
+        return new Stmt.Class(name, methods);
     }
 
     private Stmt printStatement() {
@@ -253,6 +267,9 @@ public class Parser {
             if (expr instanceof Expr.Variable) {
                 Token name = ((Expr.Variable) expr).name;
                 return new Expr.Assign(name, val);
+            } else if (expr instanceof Expr.Get) {
+                Expr.Get get = (Expr.Get) expr;
+                return new Expr.Set(get.object, get.name, val);
             }
             error(equals, "Invalid assignment target.");
         }
@@ -343,6 +360,9 @@ public class Parser {
         while (true) {
             if (match(LEFT_PAREN)) {
                 expr = arguments(expr);
+            } else if (match(DOT)) {
+                Token name = checkWithError(IDENTIFIER, "Expect property name after '.'.");
+                return new Expr.Get(name, expr);
             } else {
                 break;
             }

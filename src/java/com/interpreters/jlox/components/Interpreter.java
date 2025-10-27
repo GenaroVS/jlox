@@ -5,10 +5,15 @@ import com.interpreters.jlox.ast.Expr;
 import com.interpreters.jlox.ast.Stmt;
 import com.interpreters.jlox.ast.Token;
 import com.interpreters.jlox.ast.TokenType;
+import com.interpreters.jlox.components.impl.LoxClass;
 import com.interpreters.jlox.components.impl.LoxFunction;
+import com.interpreters.jlox.components.impl.LoxInstance;
 import com.interpreters.jlox.exceptions.RuntimeError;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.interpreters.jlox.ast.TokenType.*;
 
@@ -152,6 +157,14 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitReturnStmt(Stmt.Return stmt) {
         throw new Return(stmt.value != null ? evaluate(stmt.value) : null);
+    }
+
+    @Override
+    public Void visitClassStmt(Stmt.Class stmt) {
+        env.define(stmt.name.lexeme, null);
+        LoxClass klass = new LoxClass(stmt.name.lexeme);
+        env.assign(stmt.name, klass);
+        return null;
     }
 
     @Override
@@ -325,6 +338,26 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                     String.format("Expected %d arguments but got %d.", function.arity(), args.size()));
         }
         return function.call(this, args);
+    }
+
+    @Override
+    public Object visitGetExpr(Expr.Get expr) {
+        Object object = evaluate(expr.object);
+        if (object instanceof LoxInstance) {
+            return ((LoxInstance) object).get(expr.name);
+        }
+        throw new RuntimeError(expr.name, "Only class instances have properties.");
+    }
+
+    @Override
+    public Object visitSetExpr(Expr.Set expr) {
+        Object object = evaluate(expr.object);
+        if (object instanceof LoxInstance) {
+            Object value = evaluate(expr.value);
+            ((LoxInstance) object).set(expr.name, value);
+            return value;
+        }
+        throw new RuntimeError(expr.name, "Only class instances have fields.");
     }
 
     @Override
