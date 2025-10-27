@@ -1,0 +1,9 @@
+// Class get/set properties
+class Bagel {}
+var new_bagel = Bagel();
+
+new_bagel.type = "Everything";
+print new_bagel.type;
+
+new_bagel.type = "Poppy";
+print new_bagel.type;
