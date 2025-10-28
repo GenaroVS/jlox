@@ -1,0 +1,8 @@
+class Obj {
+    init() {
+        return "Something";
+    }
+}
+
+print "init method returning value";
+var o = Obj();

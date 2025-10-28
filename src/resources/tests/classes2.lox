@@ -1,0 +1,20 @@
+// Construct and call method with 'this' keyword
+class Point {
+    init(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    add(point) {
+        return Point(this.x + point.x, this.y + point.y);
+    }
+}
+
+var p1 = Point(2, 3);
+var p2 = Point(3, 2);
+var p3 = p1.add(p2);
+
+print "X";
+print p3.x;
+print "Y";
+print p3.y;

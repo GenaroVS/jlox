@@ -1,0 +1,10 @@
+Initializing
+X
+2
+Y
+3
+Re-initializing
+X
+4
+Y
+5

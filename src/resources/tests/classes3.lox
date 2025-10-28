@@ -1,0 +1,30 @@
+// init method edge cases
+
+class Point {
+
+    init(x, y) {
+        this.x = x;
+        this.y = y;
+        return ;
+    }
+
+    add(point) {
+        return Point(this.x + point.x, this.y + point.y);
+    }
+}
+
+var p1 = Point(2, 3);
+
+print "Initializing";
+print "X";
+print p1.x;
+print "Y";
+print p1.y;
+
+p1 = p1.init(4, 5);
+
+print "Re-initializing";
+print "X";
+print p1.x;
+print "Y";
+print p1.y;
