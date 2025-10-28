@@ -20,6 +20,12 @@ public class LoxFunction implements LoxCallable {
         this.closure = closure;
     }
 
+    public LoxFunction bind(LoxInstance classInstance) {
+        Environment env = new Environment(closure);
+        env.define("this", classInstance);
+        return new LoxFunction(this.name, this.declaration, env);
+    }
+
     @Override
     public Object call(Interpreter interpreter, List<Object> arguments) {
         Environment funEnv = new Environment(closure);

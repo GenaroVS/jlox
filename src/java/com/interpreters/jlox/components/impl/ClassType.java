@@ -1,7 +1,6 @@
 package com.interpreters.jlox.components.impl;
 
-public enum FunctionType {
+public enum ClassType {
     NONE,
-    FUNCTION,
-    METHOD
+    CLASS
 }

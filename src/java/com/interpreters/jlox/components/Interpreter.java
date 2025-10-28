@@ -162,7 +162,14 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitClassStmt(Stmt.Class stmt) {
         env.define(stmt.name.lexeme, null);
-        LoxClass klass = new LoxClass(stmt.name.lexeme);
+
+        Map<String, LoxFunction> methods = new HashMap<>();
+        for (Stmt.Function method : stmt.methods) {
+            LoxFunction loxMethod = new LoxFunction(method.name.lexeme, method.lambda, env);
+            methods.put(method.name.lexeme, loxMethod);
+        }
+
+        LoxClass klass = new LoxClass(stmt.name.lexeme, methods);
         env.assign(stmt.name, klass);
         return null;
     }
@@ -290,11 +297,15 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Object visitVariableExpr(Expr.Variable expr) {
+        return lookupVariable(expr, expr.name);
+    }
+
+    private Object lookupVariable(Expr expr, Token name) {
         Integer depth = locals.get(expr);
         if (depth != null) {
-            return env.getAt(depth, expr.name.lexeme);
+            return env.getAt(depth, name.lexeme);
         } else {
-            return globals.get(expr.name);
+            return globals.get(name);
         }
     }
 
@@ -358,6 +369,11 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             return value;
         }
         throw new RuntimeError(expr.name, "Only class instances have fields.");
+    }
+
+    @Override
+    public Object visitThisExpr(Expr.This expr) {
+        return lookupVariable(expr, expr.keyword);
     }
 
     @Override

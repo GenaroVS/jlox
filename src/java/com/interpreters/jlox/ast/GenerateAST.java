@@ -26,6 +26,7 @@ public class GenerateAST {
                 "Call     : Expr callee, Token paren, List<Expr> arguments",
                 "Get      : Token name, Expr object",
                 "Set      : Expr object, Token name, Expr value",
+                "This     : Token keyword",
                 "Lambda : List<Token> params, List<Stmt> body"
         ));
 

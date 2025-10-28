@@ -5,6 +5,7 @@ import com.interpreters.jlox.ast.Expr;
 import com.interpreters.jlox.ast.Stmt;
 import com.interpreters.jlox.ast.Token;
 import com.interpreters.jlox.ast.TokenType;
+import com.interpreters.jlox.components.impl.FunctionType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,7 +75,7 @@ public class Parser {
         if (match(LEFT_BRACE)) return block();
         if (check(FUN) && checkNext(IDENTIFIER)) {
             advance();
-            return function();
+            return function(FunctionType.FUNCTION);
         }
         if (match(CLASS)) return classDeclaration();
         if (match(RETURN)) return returnStmt();
@@ -189,26 +190,30 @@ public class Parser {
         return new Stmt.Expression(expr);
     }
 
-    private Stmt function() {
-        Token name = checkWithError(IDENTIFIER, "Expect function name");
-        return new Stmt.Function(name, lambda());
+    private Stmt function(FunctionType type) {
+        Token name = checkWithError(IDENTIFIER, String.format("Expect %s name", type.toString()));
+        return new Stmt.Function(name, lambda(type));
     }
 
-    private Expr.Lambda lambda() {
+    private Expr.Lambda lambda(FunctionType type) {
         List<Token> params = new ArrayList<>();
-        checkWithError(LEFT_PAREN, "Expect '(' after function name.");
+        checkWithError(LEFT_PAREN, funcErrorMessage("Expect '(' after %s name.", type));
         if (!check(RIGHT_PAREN)) {
             do {
                 if (params.size() >= 255) {
-                    error(peek(), "Can't have more than 255 parameters in a function.");
+                    error(peek(), funcErrorMessage("Can't have more than 255 parameters in a %s.", type));
                 }
                 params.add(checkWithError(IDENTIFIER, "Expect parameter name."));
             } while (match(COMMA));
         }
-        checkWithError(RIGHT_PAREN, "Expect ')' after function parameters.");
-        checkWithError(LEFT_BRACE, "Expect '{' before function body");
+        checkWithError(RIGHT_PAREN, funcErrorMessage("Expect ')' after %s parameters.", type));
+        checkWithError(LEFT_BRACE, funcErrorMessage("Expect '{' before function body", type));
         List<Stmt> body = ((Stmt.Block) block()).statements;
         return new Expr.Lambda(params, body);
+    }
+
+    private String funcErrorMessage(String msg, FunctionType type) {
+        return String.format(msg, type.toString());
     }
 
     private Stmt returnStmt() {
@@ -227,7 +232,7 @@ public class Parser {
 
         List<Stmt.Function> methods = new ArrayList<>();
         while (!check(RIGHT_BRACE) && !isAtEnd()) {
-            methods.add((Stmt.Function) function());
+            methods.add((Stmt.Function) function(FunctionType.METHOD));
         }
 
         checkWithError(RIGHT_BRACE, "Expect '{' after class body.");
@@ -242,7 +247,7 @@ public class Parser {
 
     private Expr expression() {
         if (match(FUN)) {
-            return lambda();
+            return lambda(FunctionType.FUNCTION);
         }
         return comma();
     }
@@ -402,6 +407,7 @@ public class Parser {
         if (match(TRUE)) return new Expr.Literal(true);
         if (match(NIL)) return new Expr.Literal(null);
         if (match(IDENTIFIER)) return new Expr.Variable(previous());
+        if (match(THIS)) return new Expr.This(previous());
 
         if (match(NUMBER, STRING)) {
             return new Expr.Literal(previous().literal);

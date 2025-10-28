@@ -25,6 +25,11 @@ public class AstPrinter implements Expr.Visitor<String> {
     }
 
     @Override
+    public String visitThisExpr(Expr.This expr) {
+        return parenthesize("this");
+    }
+
+    @Override
     public String visitLambdaExpr(Expr.Lambda expr) {
         Expr[] paramsArray = (Expr[]) expr.params.toArray();
         return parenthesize("lambda", paramsArray);

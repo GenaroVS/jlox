@@ -4,6 +4,7 @@ import com.interpreters.jlox.Lox;
 import com.interpreters.jlox.ast.Expr;
 import com.interpreters.jlox.ast.Stmt;
 import com.interpreters.jlox.ast.Token;
+import com.interpreters.jlox.components.impl.ClassType;
 import com.interpreters.jlox.components.impl.FunctionType;
 
 import java.util.HashMap;
@@ -11,11 +12,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import static com.interpreters.jlox.ast.TokenType.THIS;
+
 public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     private final Interpreter interpreter;
     private final Stack<Map<String, Variable>> scopes = new Stack<>();
     private FunctionType curFunction = FunctionType.NONE;
+    private ClassType curClass = ClassType.NONE;
 
     public Resolver(Interpreter interpreter) {
         this.interpreter = interpreter;
@@ -88,13 +92,17 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitFunctionStmt(Stmt.Function stmt) {
+        resolveFunction(stmt, FunctionType.FUNCTION);
+        return null;
+    }
+
+    private void resolveFunction(Stmt.Function stmt, FunctionType type) {
         declare(stmt.name);
         define(stmt.name);
         FunctionType prev = curFunction;
-        curFunction = FunctionType.FUNCTION;
+        curFunction = type;
         resolve(stmt.lambda);
         curFunction = prev;
-        return null;
     }
 
     @Override
@@ -164,6 +172,15 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     public Void visitSetExpr(Expr.Set expr) {
         resolve(expr.value);
         resolve(expr.object);
+        return null;
+    }
+
+    @Override
+    public Void visitThisExpr(Expr.This expr) {
+        if (ClassType.CLASS != curClass) {
+            Lox.error(expr.keyword, "'this' referenced outside of class method.");
+        }
+        resolveLocal(expr, expr.keyword);
         return null;
     }
 
@@ -249,6 +266,17 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     public Void visitClassStmt(Stmt.Class stmt) {
         declare(stmt.name);
         define(stmt.name);
+        ClassType prev = curClass;
+        curClass = ClassType.CLASS;
+        beginScope();
+        Token thisTok = new Token(THIS, "this", null, 0);
+        scopes.peek().put("this", new Variable(thisTok, VariableState.DEFINED));
+
+        for (Stmt.Function method : stmt.methods) {
+            resolveFunction(method, FunctionType.METHOD);
+        }
+        endScope();
+        curClass = prev;
         return null;
     }
 
