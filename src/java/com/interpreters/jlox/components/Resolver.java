@@ -27,11 +27,19 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     private static class Variable {
         public final Token name;
+        public final VariableType type;
         public VariableState state;
 
-        public Variable(Token name, VariableState state) {
+        public Variable(Token name, VariableType type, VariableState state) {
             this.name = name;
+            this.type = type;
             this.state = state;
+        }
+
+        public boolean checkUsed() {
+            return state == VariableState.USED ||
+                    type == VariableType.METHOD ||
+                    "this".equals(name.lexeme);
         }
     }
 
@@ -39,6 +47,13 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         DECLARED,
         DEFINED,
         USED
+    }
+
+    private enum VariableType {
+        VALUE,
+        FUNCTION,
+        CLASS,
+        METHOD
     }
 
     public void resolve(List<Stmt> statements) {
@@ -65,7 +80,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitVarStmt(Stmt.Var stmt) {
-        declare(stmt.name);
+        declare(stmt.name, VariableType.VALUE);
         if (stmt.initializer != null) {
             resolve(stmt.initializer);
         }
@@ -92,12 +107,12 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitFunctionStmt(Stmt.Function stmt) {
-        resolveFunction(stmt, FunctionType.FUNCTION);
+        resolveFunction(stmt, FunctionType.FUNCTION, VariableType.FUNCTION);
         return null;
     }
 
-    private void resolveFunction(Stmt.Function stmt, FunctionType type) {
-        declare(stmt.name);
+    private void resolveFunction(Stmt.Function stmt, FunctionType type, VariableType varType) {
+        declare(stmt.name, varType);
         define(stmt.name);
         FunctionType prev = curFunction;
         curFunction = type;
@@ -109,7 +124,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     public Void visitLambdaExpr(Expr.Lambda lambda) {
         beginScope();
         for (Token param : lambda.params) {
-            declare(param);
+            declare(param, VariableType.VALUE);
             define(param);
         }
         resolve(lambda.body);
@@ -124,18 +139,18 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     private void endScope() {
         Map<String, Variable> scope = scopes.pop();
         for (Variable v : scope.values()) {
-            if (v.state != VariableState.USED) {
+            if (!v.checkUsed()) {
                 Lox.warn(v.name, "Unused variable.");
             }
         }
     }
 
-    private void declare(Token name) {
+    private void declare(Token name, VariableType type) {
         if (scopes.isEmpty()) return;
         if (scopes.peek().containsKey(name.lexeme)) {
             Lox.error(name, "Already a variable with this name in this scope");
         }
-        scopes.peek().put(name.lexeme, new Variable(name, VariableState.DECLARED));
+        scopes.peek().put(name.lexeme, new Variable(name, type, VariableState.DECLARED));
     }
 
     private void define(Token name) {
@@ -257,6 +272,9 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
             Lox.error(stmt.keyword, "Can't return from top-level code.");
         }
         if (stmt.value != null) {
+            if (curFunction == FunctionType.INITIALIZER) {
+                Lox.error(stmt.keyword, "Can't return a value from a class initializer.");
+            }
             resolve(stmt.value);
         }
         return null;
@@ -264,16 +282,17 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitClassStmt(Stmt.Class stmt) {
-        declare(stmt.name);
+        declare(stmt.name, VariableType.CLASS);
         define(stmt.name);
         ClassType prev = curClass;
         curClass = ClassType.CLASS;
         beginScope();
         Token thisTok = new Token(THIS, "this", null, 0);
-        scopes.peek().put("this", new Variable(thisTok, VariableState.DEFINED));
+        scopes.peek().put("this", new Variable(thisTok, VariableType.VALUE, VariableState.DEFINED));
 
         for (Stmt.Function method : stmt.methods) {
-            resolveFunction(method, FunctionType.METHOD);
+            FunctionType type = method.name.lexeme.equals("init") ? FunctionType.INITIALIZER : FunctionType.METHOD;
+            resolveFunction(method, type, VariableType.METHOD);
         }
         endScope();
         curClass = prev;

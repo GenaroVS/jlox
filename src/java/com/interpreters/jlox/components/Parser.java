@@ -367,7 +367,7 @@ public class Parser {
                 expr = arguments(expr);
             } else if (match(DOT)) {
                 Token name = checkWithError(IDENTIFIER, "Expect property name after '.'.");
-                return new Expr.Get(name, expr);
+                expr = new Expr.Get(name, expr);
             } else {
                 break;
             }
