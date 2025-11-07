@@ -50,4 +50,4 @@ function      -> IDENTIFIER functionBody ;
 functionBody  -> "(" parameters? ")" block ;
 parameters    -> IDENTIFIER ( "," IDENTIFIER )* ;
 classDecl     -> "class" IDENTIFIER ( "<" IDENTIFIER )? "{" function* "}" ;
-primary       -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER ;
+primary       -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | "this" | "super" | IDENTIFIER ;

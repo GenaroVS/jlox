@@ -1,0 +1,15 @@
+class Enchilada {
+  cook() {
+    print "fry stuffing, wrap in corn tortilla, and garnish with salsa.";
+  }
+}
+
+class MoleEnchilada < Enchilada {
+
+    cook() {
+        print "Create stuffing composed of mole sauce and shredded chicken.";
+        print super.cook();
+    }
+}
+
+MoleEnchilada().cook();

@@ -414,6 +414,12 @@ public class Parser {
         if (match(NIL)) return new Expr.Literal(null);
         if (match(IDENTIFIER)) return new Expr.Variable(previous());
         if (match(THIS)) return new Expr.This(previous());
+        if (match(SUPER)) {
+            Token keyword = previous();
+            checkWithError(DOT, "Expect '.' after 'super'.");
+            Token method = checkWithError(IDENTIFIER, "Expect superclass method name.");
+            return new Expr.Super(keyword, method);
+        }
 
         if (match(NUMBER, STRING)) {
             return new Expr.Literal(previous().literal);

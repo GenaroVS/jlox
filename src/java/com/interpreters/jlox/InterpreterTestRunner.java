@@ -160,13 +160,15 @@ public class InterpreterTestRunner {
             sb.append("=== ").append(file.getFileName()).append(" ===\n");
             sb.append("Exit code: ").append(exitCode).append("\n");
             sb.append("Result: ").append(passed ? "✅ PASSED" : "❌ FAILED").append("\n");
-            sb.append("--- STDOUT ---\n");
-            sb.append(stdout.isBlank() ? "[empty]\n" : stdout);
-            sb.append("--- STDERR ---\n");
-            sb.append(stderr.isBlank() ? "[empty]\n" : stderr);
-            sb.append("--- EXPECTED ---\n");
-            sb.append(expected.isBlank() ? "[none]\n" : expected);
-            sb.append("\n");
+            if (!passed) {
+                sb.append("--- STDOUT ---\n");
+                sb.append(stdout.isBlank() ? "[empty]\n" : stdout);
+                sb.append("--- STDERR ---\n");
+                sb.append(stderr.isBlank() ? "[empty]\n" : stderr);
+                sb.append("--- EXPECTED ---\n");
+                sb.append(expected.isBlank() ? "[none]\n" : expected);
+                sb.append("\n");
+            }
             return sb.toString();
         }
     }

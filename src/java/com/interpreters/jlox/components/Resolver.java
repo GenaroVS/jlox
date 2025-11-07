@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import static com.interpreters.jlox.ast.TokenType.SUPER;
 import static com.interpreters.jlox.ast.TokenType.THIS;
 
 public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
@@ -39,7 +40,8 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         public boolean checkUsed() {
             return state == VariableState.USED ||
                     type == VariableType.METHOD ||
-                    "this".equals(name.lexeme);
+                    "this".equals(name.lexeme) ||
+                    "super".equals(name.lexeme);
         }
     }
 
@@ -200,6 +202,12 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Void visitSuperExpr(Expr.Super expr) {
+        resolveLocal(expr, expr.keyword);
+        return null;
+    }
+
+    @Override
     public Void visitBinaryExpr(Expr.Binary expr) {
         resolve(expr.left);
         resolve(expr.right);
@@ -289,6 +297,9 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
                 Lox.error(stmt.superclass.name, "A class can't inherit from itself.");
             }
             resolve(stmt.superclass);
+            beginScope();
+            Token superTok = new Token(SUPER, "super", null, 0);
+            scopes.peek().put("super", new Variable(superTok, VariableType.VALUE, VariableState.DEFINED));
         }
         ClassType prev = curClass;
         curClass = ClassType.CLASS;
@@ -301,6 +312,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
             resolveFunction(method, type, VariableType.METHOD);
         }
         endScope();
+        if (stmt.superclass != null) endScope();
         curClass = prev;
         return null;
     }
