@@ -1,0 +1,9 @@
+class Enchilada {
+  cook() {
+    print "Pan fry stuffing, wrap in corn tortilla, and garnish with salsa.";
+  }
+}
+
+class MoleEnchilada < Enchilada {}
+
+MoleEnchilada().cook();
