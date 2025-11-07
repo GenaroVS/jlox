@@ -49,5 +49,5 @@ funDecl       -> "fun" function ;
 function      -> IDENTIFIER functionBody ;
 functionBody  -> "(" parameters? ")" block ;
 parameters    -> IDENTIFIER ( "," IDENTIFIER )* ;
-classDecl     -> "class" IDENTIFIER "{" function+ "}" ;
+classDecl     -> "class" IDENTIFIER ( "<" IDENTIFIER )? "{" function* "}" ;
 primary       -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER ;

@@ -40,7 +40,8 @@ public class GenerateAST {
                 "Expression : Expr expression",
                 "Function   : Token name, Expr.Lambda lambda",
                 "Return     : Token keyword, Expr value",
-                "Class      : Token name, List<Stmt.Function> methods",
+                "Class      : Token name, Expr.Variable superclass," +
+                        " List<Stmt.Function> methods",
                 "Print      : Expr expression"
         ));
     }

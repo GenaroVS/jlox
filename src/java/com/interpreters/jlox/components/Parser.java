@@ -228,15 +228,21 @@ public class Parser {
 
     private Stmt classDeclaration() {
         Token name = checkWithError(IDENTIFIER, "Expect a class name.");
-        checkWithError(LEFT_BRACE, "Expect '{' before class body.");
 
+        Expr.Variable superclass = null;
+        if (match(LESS)) {
+            checkWithError(IDENTIFIER, "Expect superclass name.");
+            superclass = new Expr.Variable(previous());
+        }
+
+        checkWithError(LEFT_BRACE, "Expect '{' before class body.");
         List<Stmt.Function> methods = new ArrayList<>();
         while (!check(RIGHT_BRACE) && !isAtEnd()) {
             methods.add((Stmt.Function) function(FunctionType.METHOD));
         }
 
         checkWithError(RIGHT_BRACE, "Expect '{' after class body.");
-        return new Stmt.Class(name, methods);
+        return new Stmt.Class(name, superclass, methods);
     }
 
     private Stmt printStatement() {
