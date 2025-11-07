@@ -1,0 +1,2 @@
+print "Henry the " + stringify(4) + "th";
+print "Henry is " + stringify(nil);

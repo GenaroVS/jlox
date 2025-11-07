@@ -50,6 +50,18 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                 return 0;
             }
         });
+
+        globals.define("stringify", new LoxCallable() {
+            @Override
+            public Object call(Interpreter interpreter, List<Object> arguments) {
+                return stringify(arguments.get(0));
+            }
+
+            @Override
+            public int arity() {
+                return 1;
+            }
+        });
     }
 
     public void interpret(List<Stmt> statements) {
