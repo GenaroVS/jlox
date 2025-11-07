@@ -41,15 +41,22 @@ public class Scanner {
             case '}': addToken(RIGHT_BRACE); break;
             case ',': addToken(COMMA); break;
             case '.': addToken(DOT); break;
-            case '-': addToken(MINUS); break;
-            case '+': addToken(PLUS); break;
+            case '-':
+                addToken(advanceIf('=') ? MINUS_EQ : MINUS);
+                break;
+            case '+':
+                addToken(advanceIf('=') ? PLUS_EQ : PLUS);
+                break;
             case ';': addToken(SEMICOLON); break;
-            case '*': addToken(STAR); break;
+            case '*':
+                addToken(advanceIf('=') ? STAR_EQ : STAR);
+                break;
             case '?': addToken(QUESTION); break;
             case ':': addToken(COLON); break;
             case '/':
                 if (!comments()) {
-                    addToken(SLASH);
+                    addToken(advanceIf('=') ? SLASH_EQ : SLASH);
+                    break;
                 }
                 break;
             case '!':

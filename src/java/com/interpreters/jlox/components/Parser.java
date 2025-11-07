@@ -272,17 +272,39 @@ public class Parser {
     private Expr assignment() {
         Expr expr = ternary();
 
+        Token equals = previous();
         if (match(EQUAL)) {
-            Token equals = previous();
             Expr val = assignment();
-            if (expr instanceof Expr.Variable) {
-                Token name = ((Expr.Variable) expr).name;
-                return new Expr.Assign(name, val);
-            } else if (expr instanceof Expr.Get) {
-                Expr.Get get = (Expr.Get) expr;
-                return new Expr.Set(get.object, get.name, val);
-            }
-            error(equals, "Invalid assignment target.");
+            return handleAssignment(expr, equals, val);
+        } else if (match(PLUS_EQ)) {
+            Token operator = new Token(PLUS, "+", null, equals.line);
+            Expr val = new Expr.Binary(expr, operator, assignment());
+            return handleAssignment(expr, equals, val);
+        } else if (match(MINUS_EQ)) {
+            Token operator = new Token(MINUS, "-", null, equals.line);
+            Expr val = new Expr.Binary(expr, operator, assignment());
+            return handleAssignment(expr, equals, val);
+        } else if (match(STAR_EQ)) {
+            Token operator = new Token(STAR, "*", null, equals.line);
+            Expr val = new Expr.Binary(expr, operator, assignment());
+            return handleAssignment(expr, equals, val);
+        } else if (match(SLASH_EQ)) {
+            Token operator = new Token(SLASH, "/", null, equals.line);
+            Expr val = new Expr.Binary(expr, operator, assignment());
+            return handleAssignment(expr, equals, val);
+        }
+        return expr;
+    }
+
+    private Expr handleAssignment(Expr expr, Token operator, Expr val) {
+        if (expr instanceof Expr.Variable) {
+            Token name = ((Expr.Variable) expr).name;
+            return new Expr.Assign(name, val);
+        } else if (expr instanceof Expr.Get) {
+            Expr.Get get = (Expr.Get) expr;
+            return new Expr.Set(get.object, get.name, val);
+        } else {
+            error(operator, "Invalid assignment target.");
         }
         return expr;
     }
