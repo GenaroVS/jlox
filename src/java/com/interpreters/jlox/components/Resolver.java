@@ -194,7 +194,7 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitThisExpr(Expr.This expr) {
-        if (ClassType.CLASS != curClass) {
+        if (ClassType.NONE == curClass) {
             Lox.error(expr.keyword, "'this' referenced outside of class method.");
         }
         resolveLocal(expr, expr.keyword);
@@ -203,6 +203,11 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitSuperExpr(Expr.Super expr) {
+        if (curClass == ClassType.NONE) {
+            Lox.error(expr.keyword, "Can't use 'super' outside of a class.");
+        } else if (curClass != ClassType.SUBCLASS) {
+            Lox.error(expr.keyword, "Can't use 'super' in a class with no superclass.");
+        }
         resolveLocal(expr, expr.keyword);
         return null;
     }
@@ -292,17 +297,19 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     public Void visitClassStmt(Stmt.Class stmt) {
         declare(stmt.name, VariableType.CLASS);
         define(stmt.name);
+        ClassType prev = curClass;
         if (stmt.superclass != null) {
             if (stmt.name.lexeme.equals(stmt.superclass.name.lexeme)) {
                 Lox.error(stmt.superclass.name, "A class can't inherit from itself.");
             }
+            curClass = ClassType.SUBCLASS;
             resolve(stmt.superclass);
             beginScope();
             Token superTok = new Token(SUPER, "super", null, 0);
             scopes.peek().put("super", new Variable(superTok, VariableType.VALUE, VariableState.DEFINED));
+        } else {
+            curClass = ClassType.CLASS;
         }
-        ClassType prev = curClass;
-        curClass = ClassType.CLASS;
         beginScope();
         Token thisTok = new Token(THIS, "this", null, 0);
         scopes.peek().put("this", new Variable(thisTok, VariableType.VALUE, VariableState.DEFINED));
