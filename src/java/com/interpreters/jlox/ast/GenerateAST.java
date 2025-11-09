@@ -23,6 +23,8 @@ public class GenerateAST {
                 "Literal  : Object value",
                 "Variable : Token name",
                 "Assign   : Token name, Expr value",
+                "ArrayGet : Expr arr, Token bracket, Expr size",
+                "ArraySet : Expr arr, Token bracket, Expr size, Expr value",
                 "Call     : Expr callee, Token paren, List<Expr> arguments",
                 "Get      : Token name, Expr object",
                 "Set      : Expr object, Token name, Expr value",

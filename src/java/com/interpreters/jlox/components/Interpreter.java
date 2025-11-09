@@ -346,6 +346,62 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitArrayGetExpr(Expr.ArrayGet expr) {
+        Object arrayObj = expr.arr != null ? evaluate(expr.arr) : null;
+        Object sizeObj = evaluate(expr.size);
+
+        int size = checkArraySubscript(sizeObj, expr.bracket);
+        if (arrayObj == null) {
+            return new Object[size];
+        }
+        Object[] array = checkArrayType(arrayObj, expr.bracket);
+        checkArrayBounds(array, size, expr.bracket);
+        return array[size];
+    }
+
+    @Override
+    public Object visitArraySetExpr(Expr.ArraySet expr) {
+        Object arrayObj = expr.arr != null ? evaluate(expr.arr) : null;
+        Object sizeObj = evaluate(expr.size);
+
+        Object[] array = checkArrayType(arrayObj, expr.bracket);
+        int size = checkArraySubscript(sizeObj, expr.bracket);
+        checkArrayBounds(array, size, expr.bracket);
+
+        Object value = evaluate(expr.value);
+        array[size] = value;
+        return value;
+    }
+
+    private int checkArraySubscript(Object obj, Token bracket) {
+        int size;
+        if (obj instanceof Double) {
+            size = ((Double)obj).intValue();
+        } else {
+            throw new RuntimeError(bracket, "Array size/index must be a number.");
+        }
+        return size;
+    }
+
+    private Object[] checkArrayType(Object obj, Token bracket) {
+        Object[] array;
+        if (obj instanceof Object[]) {
+            array = (Object[]) obj;
+        } else {
+            throw new RuntimeError(bracket, "Attempting to access an element of a value that has no elements.");
+        }
+        return array;
+    }
+
+    private void checkArrayBounds(Object[] array, int size, Token bracket) {
+        if (size >= array.length) {
+            throw new RuntimeError(bracket, "Array index out of bounds for array of size " + size);
+        } else if (size < 0) {
+            throw new RuntimeError(bracket, "Array index can't be negative");
+        }
+    }
+
+    @Override
     public Object visitUnaryExpr(Expr.Unary expr) {
         Object val = evaluate(expr.right);
         if (expr.operator.type == MINUS) {

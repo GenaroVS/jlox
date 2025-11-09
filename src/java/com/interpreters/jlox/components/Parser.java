@@ -297,7 +297,10 @@ public class Parser {
     }
 
     private Expr handleAssignment(Expr expr, Token operator, Expr val) {
-        if (expr instanceof Expr.Variable) {
+        if (expr instanceof Expr.ArrayGet) {
+            Expr.ArrayGet arrayGet = ((Expr.ArrayGet) expr);
+            return new Expr.ArraySet(arrayGet.arr, arrayGet.bracket, arrayGet.size, val);
+        } else if (expr instanceof Expr.Variable) {
             Token name = ((Expr.Variable) expr).name;
             return new Expr.Assign(name, val);
         } else if (expr instanceof Expr.Get) {
@@ -385,7 +388,24 @@ public class Parser {
             Token operator = previous();
             return new Expr.Unary(operator, unary());
         }
-        return call();
+        return array();
+    }
+
+    private Expr array() {
+        Expr expr = null;
+        if (!check(LEFT_BRACKET)) {
+            expr = call();
+        }
+        if (match(LEFT_BRACKET)) {
+            Token bracket = previous();
+            if (check(RIGHT_BRACKET)) {
+                error(peek(), "Expected array size or index before ']'.");
+            }
+            Expr size = call();
+            checkWithError(RIGHT_BRACKET, "Expected ']' to close array reference");
+            return new Expr.ArrayGet(expr, bracket, size);
+        }
+        return expr;
     }
 
     private Expr call() {

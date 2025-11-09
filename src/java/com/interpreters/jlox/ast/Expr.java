@@ -13,6 +13,8 @@ public abstract class Expr {
         R visitLiteralExpr(Literal expr);
         R visitVariableExpr(Variable expr);
         R visitAssignExpr(Assign expr);
+        R visitArrayGetExpr(ArrayGet expr);
+        R visitArraySetExpr(ArraySet expr);
         R visitCallExpr(Call expr);
         R visitGetExpr(Get expr);
         R visitSetExpr(Set expr);
@@ -148,6 +150,44 @@ public abstract class Expr {
         @Override
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitAssignExpr(this);
+        }
+    }
+
+    public static class ArrayGet extends Expr {
+
+        public final Expr arr;
+        public final Token bracket;
+        public final Expr size;
+
+        public ArrayGet(Expr arr, Token bracket, Expr size) {
+            this.arr = arr;
+            this.bracket = bracket;
+            this.size = size;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitArrayGetExpr(this);
+        }
+    }
+
+    public static class ArraySet extends Expr {
+
+        public final Expr arr;
+        public final Token bracket;
+        public final Expr size;
+        public final Expr value;
+
+        public ArraySet(Expr arr, Token bracket, Expr size, Expr value) {
+            this.arr = arr;
+            this.bracket = bracket;
+            this.size = size;
+            this.value = value;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitArraySetExpr(this);
         }
     }
 

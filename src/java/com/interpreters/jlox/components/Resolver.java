@@ -108,6 +108,23 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Void visitArrayGetExpr(Expr.ArrayGet expr) {
+        if (expr.arr != null) {
+            resolve(expr.arr);
+        }
+        resolve(expr.size);
+        return null;
+    }
+
+    @Override
+    public Void visitArraySetExpr(Expr.ArraySet expr) {
+        resolve(expr.arr);
+        resolve(expr.size);
+        resolve(expr.value);
+        return null;
+    }
+
+    @Override
     public Void visitFunctionStmt(Stmt.Function stmt) {
         resolveFunction(stmt, FunctionType.FUNCTION, VariableType.FUNCTION);
         return null;
