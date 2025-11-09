@@ -392,16 +392,13 @@ public class Parser {
     }
 
     private Expr array() {
-        Expr expr = null;
-        if (!check(LEFT_BRACKET)) {
-            expr = call();
-        }
+        Expr expr = !check(LEFT_BRACKET) ? call() : null;
         if (match(LEFT_BRACKET)) {
             Token bracket = previous();
             if (check(RIGHT_BRACKET)) {
                 error(peek(), "Expected array size or index before ']'.");
             }
-            Expr size = call();
+            Expr size = expression();
             checkWithError(RIGHT_BRACKET, "Expected ']' to close array reference");
             return new Expr.ArrayGet(expr, bracket, size);
         }

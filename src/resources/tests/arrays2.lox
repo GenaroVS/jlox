@@ -1,0 +1,32 @@
+print "checking edge case array references";
+class ArrayWrapper {
+    init() {
+        this.array = [1];
+    }
+
+    getArray() {
+        return this.array;
+    }
+}
+var arrayW = ArrayWrapper();
+
+arrayW.getArray()[0] = 5;
+print arrayW.getArray()[0];
+
+print "checking index/size expressiveness";
+fun getIndex() {
+    return true ? 9 : 5;
+}
+var another_array = [(10 - 5) * 2];
+another_array[true ? 9 : 5] = 7;
+print another_array[getIndex()];
+
+print "Array Runtime errors";
+print "";
+
+var str = "Bob";
+str[10] = 5;
+var yet_another_array = [10];
+print yet_another_array[10];
+print yet_another_array[-2];
+print yet_another_array[str];

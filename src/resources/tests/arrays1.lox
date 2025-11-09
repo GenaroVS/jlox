@@ -1,8 +1,5 @@
-var array = [10];
-for (var i = 0; i < 10; i += 1) {
-    array[i] = i * 2;
-}
+var array = [10]; for (var i = 0; i < size(array); i += 1) { array[i] = i * 2; }
 
-for (var i = 0; i < 10; i += 1) {
+for (var i = 0; i < size(array); i += 1) {
     print array[i];
 }

@@ -62,6 +62,20 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                 return 1;
             }
         });
+
+        globals.define("size", new LoxCallable() {
+            @Override
+            public Object call(Interpreter interpreter, List<Object> arguments) {
+                Object obj = arguments.get(0);
+                int size = obj instanceof Object[] ? ((Object[]) obj).length : 0;
+                return (double) size;
+            }
+
+            @Override
+            public int arity() {
+                return 1;
+            }
+        });
     }
 
     public void interpret(List<Stmt> statements) {
@@ -395,7 +409,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     private void checkArrayBounds(Object[] array, int size, Token bracket) {
         if (size >= array.length) {
-            throw new RuntimeError(bracket, "Array index out of bounds for array of size " + size);
+            throw new RuntimeError(bracket, "Array index out of bounds for array of size " + array.length);
         } else if (size < 0) {
             throw new RuntimeError(bracket, "Array index can't be negative");
         }
